@@ -10,16 +10,24 @@ public class Tractor_Script : MonoBehaviour
     public bool avanzaEnZ = true;
 
     [Header("Movimiento")]
-    public float velocidad = 5f;
-    public float velocidadRotacion = 5f;
+    public float velocidad = 2f;
+    [Tooltip("Grados por segundo que puede girar el tractor. Un valor bajo produce curvas amplias (como manejando); uno alto gira casi en el sitio.")]
+    public float velocidadRotacion = 200f;
+    public float radioLlegada = 1.5f;
     public bool enBucle = false;
+
+    [Header("Corrección de orientación del modelo")]
+    [Tooltip("Si el frente del modelo 3D no coincide con el eje Z del objeto, ajusta este ángulo (ej. 180 si el tractor avanza de espaldas).")]
+    public float anguloOffsetModelo = 0f;
 
     private readonly List<Vector3> puntosRuta = new List<Vector3>();
     private int indiceActual = 0;
+    private Vector3 direccionActual;
 
     void Start()
     {
         GenerarRutaZigzag();
+        direccionActual = transform.forward;
     }
 
     void GenerarRutaZigzag()
@@ -51,18 +59,20 @@ public class Tractor_Script : MonoBehaviour
         if (puntosRuta.Count == 0) return;
 
         Vector3 destino = puntosRuta[indiceActual];
-        Vector3 direccion = destino - transform.position;
-        direccion.y = 0f;
+        Vector3 haciaDestino = destino - transform.position;
+        haciaDestino.y = 0f;
 
-        if (direccion.sqrMagnitude > 0.001f)
+        if (haciaDestino.sqrMagnitude > 0.0001f)
         {
-            Quaternion rotacionObjetivo = Quaternion.LookRotation(direccion.normalized);
-            transform.rotation = Quaternion.Slerp(transform.rotation, rotacionObjetivo, velocidadRotacion * Time.deltaTime);
+            float radianesMaximos = velocidadRotacion * Mathf.Deg2Rad * Time.deltaTime;
+            direccionActual = Vector3.RotateTowards(direccionActual, haciaDestino.normalized, radianesMaximos, 0f).normalized;
         }
 
-        transform.position = Vector3.MoveTowards(transform.position, destino, velocidad * Time.deltaTime);
+        transform.position += direccionActual * velocidad * Time.deltaTime;
+        transform.rotation = Quaternion.LookRotation(direccionActual) * Quaternion.Euler(0f, anguloOffsetModelo, 0f);
 
-        if (Vector3.Distance(transform.position, destino) < 0.1f)
+        Vector3 posicionPlana = new Vector3(transform.position.x, destino.y, transform.position.z);
+        if (Vector3.Distance(posicionPlana, destino) < radioLlegada)
         {
             indiceActual++;
             if (indiceActual >= puntosRuta.Count)
