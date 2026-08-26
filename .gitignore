@@ -52,15 +52,3 @@ Thumbs.db
 
 # Visual Studio Code personal settings
 .vscode/
-
-cd ~/Documents/GitHub/Simulacion-Cosecha-Equipo-1
-cat >> .gitignore << 'EOF'
-Library/
-Temp/
-Obj/
-Build/
-Builds/
-Logs/
-UserSettings/
-*.csproj
-*.sln
