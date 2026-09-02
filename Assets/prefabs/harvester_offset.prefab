@@ -85,7 +85,8 @@ PrefabInstance:
       value: cosechadora_v2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 2289953559462207021, guid: a344241b12c6a4c18a9b528835e22efd, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a344241b12c6a4c18a9b528835e22efd, type: 3}
