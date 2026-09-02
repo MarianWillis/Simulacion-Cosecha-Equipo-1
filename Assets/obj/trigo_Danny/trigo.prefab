@@ -91,50 +91,5 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6db1ebdd9a023468cb94f1af1d2bd395, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1559906585763312051}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6db1ebdd9a023468cb94f1af1d2bd395, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 4205236170922603269}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6db1ebdd9a023468cb94f1af1d2bd395, type: 3}
---- !u!1 &5464566431237579555 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 6db1ebdd9a023468cb94f1af1d2bd395, type: 3}
-  m_PrefabInstance: {fileID: 5122672943293111922}
-  m_PrefabAsset: {fileID: 0}
---- !u!65 &1559906585763312051
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5464566431237579555}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 2.2886403, y: 15.673952, z: 4.5811653}
-  m_Center: {x: -6.985636, y: 7.163026, z: 2.292158}
---- !u!114 &4205236170922603269
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5464566431237579555}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 209e14f76dec8f044975f51dac5b7966, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Trigo_Controller
-  tagTractor: Tractor
