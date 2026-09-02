@@ -101,8 +101,6 @@ namespace Puente
 
         public void ManejarPaso(PasoDTO paso)
         {
-            float velocidad = tamCelda / Mathf.Max(intervaloEsperadoEntrePasos, 0.001f);
-
             foreach (var estado in paso.agentes)
             {
                 if (!agentes.TryGetValue((ClaseId(estado.clase), estado.id), out var t))
@@ -121,6 +119,18 @@ namespace Puente
                     Vector3 adelante = new Vector3(estado.direccion[1], 0f, estado.direccion[0]);
                     rotacion = Quaternion.LookRotation(adelante);
                 }
+
+                // velocidad segun la distancia real a recorrer en este paso,
+                // no una celda fija: un agente puede avanzar varias celdas
+                // por paso (ver Maquina.moverse()/velocidad_tractor en
+                // granja.py), y PasoDTO solo manda la posicion final. Con una
+                // velocidad fija calibrada para 1 celda, el deslizamiento de
+                // un salto de varias celdas tardaba varios intervalos en
+                // completarse: el proximo "paso" sobreescribia el objetivo
+                // antes de llegar, y el agente se quedaba cada vez mas atras
+                // de la celda que el mensaje ya reportaba como cosechada.
+                float distancia = Vector3.Distance(t.position, destino);
+                float velocidad = distancia / Mathf.Max(intervaloEsperadoEntrePasos, 0.001f);
 
                 var movimiento = t.GetComponent<MovimientoSuave>();
                 if (movimiento != null)

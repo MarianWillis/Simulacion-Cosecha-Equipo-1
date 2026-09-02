@@ -85,7 +85,12 @@ namespace Puente
 
         private void Update()
         {
-            while (mensajesPendientes.TryDequeue(out var json))
+            // Un solo mensaje por frame: si Python se adelanta (p.ej. Unity
+            // tardo en instanciar el terreno en ManejarInit), la cola se
+            // vacia en frames sucesivos en vez de aplicar de golpe varios
+            // "paso" en el mismo frame, que hacia parecer que se saltaba
+            // una fila entera de cultivo apenas arrancaba la simulacion.
+            if (mensajesPendientes.TryDequeue(out var json))
             {
                 ProcesarMensaje(json);
             }
