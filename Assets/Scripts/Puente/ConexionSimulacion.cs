@@ -1,98 +1,64 @@
 using System;
-using System.Collections.Concurrent;
-using System.Net.WebSockets;
+using System.Collections.Generic;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NativeWebSocket;
 using UnityEngine;
 
 namespace Puente
 {
     /// <summary>
-    /// Cliente WebSocket hacia puente_unity.py, con System.Net.WebSockets
-    /// (parte de .NET, no requiere paquetes adicionales; funciona en el
-    /// Editor y en builds de escritorio, no en WebGL). Python es el
-    /// servidor y empuja el estado; esta clase solo escucha y reparte cada
-    /// mensaje a GestorSimulacion segun su campo "tipo".
+    /// Cliente WebSocket hacia puente_unity.py usando NativeWebSocket (funciona
+    /// igual en el Editor, builds de escritorio y WebGL). Python sigue siendo
+    /// el servidor: empuja el estado de la simulacion (init/paso/fin) y ahora
+    /// tambien escucha comandos de control que Unity puede mandar en cualquier
+    /// momento por el mismo socket (ver puente_unity.py, _escuchar_comandos):
+    /// pausar, reanudar y reiniciar con parametros nuevos (num. de harvesters/
+    /// tractores, tamano de grid, etc).
     ///
-    /// La recepcion corre en una tarea de fondo (ClientWebSocket.ReceiveAsync
-    /// no se puede llamar desde Update sin bloquear); los mensajes completos
-    /// se encolan en `mensajesPendientes` y se procesan en Update() para que
-    /// todo el trabajo con la API de Unity (Instantiate, etc.) quede en el
-    /// hilo principal.
+    /// NativeWebSocket ya entrega OnMessage/OnOpen/OnClose en el hilo
+    /// principal siempre que DispatchMessageQueue() se llame desde Update
+    /// (necesario fuera de WebGL), asi que no hace falta una cola thread-safe
+    /// como con ClientWebSocket. Se mantiene una cola simple para procesar un
+    /// solo mensaje por frame (ver comentario en Update).
     /// </summary>
     public class ConexionSimulacion : MonoBehaviour
     {
         [SerializeField] private string host = "localhost";
         [SerializeField] private int puerto = 8765;
 
-        private ClientWebSocket socket;
-        private CancellationTokenSource cts;
-        private readonly ConcurrentQueue<string> mensajesPendientes = new();
+        private WebSocket socket;
+        private readonly Queue<string> mensajesPendientes = new();
+
+        public bool Conectado => socket != null && socket.State == WebSocketState.Open;
 
         private async void Start()
         {
-            socket = new ClientWebSocket();
-            cts = new CancellationTokenSource();
-            var uri = new Uri($"ws://{host}:{puerto}");
+            var uri = $"ws://{host}:{puerto}";
+            socket = new WebSocket(uri);
 
-            try
-            {
-                await socket.ConnectAsync(uri, cts.Token);
-                Debug.Log("Conectado al puente de simulacion.");
-                _ = EscucharMensajes();
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"No se pudo conectar al puente ({uri}): {ex.Message}");
-            }
-        }
+            socket.OnOpen += () => Debug.Log("Conectado al puente de simulacion.");
+            socket.OnError += (mensaje) => Debug.LogError($"Error de socket con el puente: {mensaje}");
+            socket.OnClose += (codigo) => Debug.LogWarning($"Conexion con el puente cerrada ({codigo}).");
+            socket.OnMessage += (bytes) => mensajesPendientes.Enqueue(Encoding.UTF8.GetString(bytes));
 
-        private async Task EscucharMensajes()
-        {
-            var buffer = new byte[8192];
-            try
-            {
-                while (socket.State == WebSocketState.Open)
-                {
-                    var acumulado = new StringBuilder();
-                    WebSocketReceiveResult resultado;
-                    do
-                    {
-                        resultado = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), cts.Token);
-                        if (resultado.MessageType == WebSocketMessageType.Close)
-                        {
-                            await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
-                            return;
-                        }
-                        acumulado.Append(Encoding.UTF8.GetString(buffer, 0, resultado.Count));
-                    } while (!resultado.EndOfMessage);
-
-                    mensajesPendientes.Enqueue(acumulado.ToString());
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                // cierre normal via OnApplicationQuit
-            }
-            catch (Exception ex)
-            {
-                Debug.LogWarning($"Conexion con el puente terminada: {ex.Message}");
-            }
+            await socket.Connect();
         }
 
         private void Update()
         {
+#if !UNITY_WEBGL || UNITY_EDITOR
+            socket?.DispatchMessageQueue();
+#endif
             // Un solo mensaje por frame: si Python se adelanta (p.ej. Unity
             // tardo en instanciar el terreno en ManejarInit), la cola se
             // vacia en frames sucesivos en vez de aplicar de golpe varios
             // "paso" en el mismo frame, que hacia parecer que se saltaba
             // una fila entera de cultivo apenas arrancaba la simulacion.
-            if (mensajesPendientes.TryDequeue(out var json))
+            if (mensajesPendientes.Count > 0)
             {
-                ProcesarMensaje(json);
+                ProcesarMensaje(mensajesPendientes.Dequeue());
             }
         }
 
@@ -133,19 +99,47 @@ namespace Puente
             }
         }
 
+        private void EnviarComando(object comando)
+        {
+            if (!Conectado)
+            {
+                Debug.LogWarning("No se puede mandar el comando: el socket con el puente no esta abierto.");
+                return;
+            }
+            socket.SendText(JsonConvert.SerializeObject(comando,
+                new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }));
+        }
+
+        public void EnviarPausar() => EnviarComando(new ComandoSimpleDTO { tipo = "pausar" });
+
+        public void EnviarReanudar() => EnviarComando(new ComandoSimpleDTO { tipo = "reanudar" });
+
+        /// <summary>
+        /// Reinicia la simulacion en Python con nuevos parametros. Cualquier
+        /// argumento en null/0 se omite del mensaje y el puente conserva el
+        /// valor actual de ese parametro (ver PARAMETROS en granja.py).
+        /// </summary>
+        public void EnviarReiniciar(int[] shape = null, int? nHarvesters = null,
+            int? nTractores = null, int? seed = null, int? steps = null)
+        {
+            EnviarComando(new ComandoReiniciarDTO
+            {
+                parametros = new ParametrosReinicioDTO
+                {
+                    shape = shape,
+                    n_harvesters = nHarvesters,
+                    n_tractores = nTractores,
+                    seed = seed,
+                    steps = steps,
+                }
+            });
+        }
+
         private async void OnApplicationQuit()
         {
-            cts?.Cancel();
             if (socket != null && socket.State == WebSocketState.Open)
             {
-                try
-                {
-                    await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "salida", CancellationToken.None);
-                }
-                catch (Exception)
-                {
-                    // la app ya esta cerrando, no hay mucho que hacer con el error
-                }
+                await socket.Close();
             }
         }
     }

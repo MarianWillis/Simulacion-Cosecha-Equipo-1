@@ -87,4 +87,34 @@ namespace Puente
     {
         public Dictionary<string, object> reportes;
     }
+
+    // Comandos que Unity manda al puente (ver puente_unity.py, _escuchar_comandos).
+    // No hace falta un "tipo" comun aca porque cada uno se serializa por su cuenta
+    // con JsonConvert.SerializeObject justo antes de enviarlo.
+
+    [Serializable]
+    public class ComandoSimpleDTO
+    {
+        public string tipo; // "pausar" | "reanudar"
+    }
+
+    [Serializable]
+    public class ParametrosReinicioDTO
+    {
+        // Solo se serializan los campos que se setean explicitamente (ver
+        // NullValueHandling.Ignore en ConexionSimulacion.EnviarReiniciar):
+        // el puente conserva el valor actual de cualquier parametro omitido.
+        public int[] shape;
+        public int? n_harvesters;
+        public int? n_tractores;
+        public int? seed;
+        public int? steps;
+    }
+
+    [Serializable]
+    public class ComandoReiniciarDTO
+    {
+        public string tipo = "reiniciar";
+        public ParametrosReinicioDTO parametros;
+    }
 }

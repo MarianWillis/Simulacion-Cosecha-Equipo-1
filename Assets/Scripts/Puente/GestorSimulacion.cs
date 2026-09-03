@@ -58,6 +58,13 @@ namespace Puente
             // Unity mide una celda, asi que el init.tam_celda del mensaje
             // no se usa aca.
 
+            // Un "init" puede llegar mas de una vez: el puente manda otro
+            // cada vez que Unity pide "reiniciar" con parametros nuevos
+            // (num. de agentes, tamano de grid, etc), sin cerrar el socket.
+            // Hay que limpiar lo instanciado por el init anterior antes de
+            // reconstruir la escena.
+            LimpiarEscena();
+
             if (prefabCamino != null && init.camino != null)
             {
                 foreach (var celda in init.camino)
@@ -89,6 +96,15 @@ namespace Puente
 
             foreach (var t in init.tractores)
                 CrearAgente(prefabTractor, "tractor", t.id, t.fila, t.col);
+        }
+
+        private void LimpiarEscena()
+        {
+            for (int i = transform.childCount - 1; i >= 0; i--)
+                Destroy(transform.GetChild(i).gameObject);
+
+            agentes.Clear();
+            trigoPorCelda.Clear();
         }
 
         private void CrearAgente(GameObject prefab, string clase, int id, int fila, int col)
