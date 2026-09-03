@@ -1,5 +1,5 @@
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Puente
 {
@@ -8,7 +8,7 @@ namespace Puente
     /// varios parametros opcionales, y el picker de OnClick() del Inspector
     /// solo soporta metodos con cero o un argumento simple, asi que no se
     /// puede apuntar un boton directo a EnviarReiniciar. Este componente lee
-    /// los InputField del panel, arma los argumentos y llama a
+    /// los TMP_InputField del panel, arma los argumentos y llama a
     /// ConexionSimulacion con un solo metodo sin parametros.
     ///
     /// Un campo vacio se manda como "sin cambios": el puente conserva el
@@ -21,12 +21,12 @@ namespace Puente
         [SerializeField] private ConexionSimulacion conexion;
 
         [Header("Campos de reinicio (vacio = sin cambios)")]
-        [SerializeField] private InputField campoFilas;
-        [SerializeField] private InputField campoColumnas;
-        [SerializeField] private InputField campoHarvesters;
-        [SerializeField] private InputField campoTractores;
-        [SerializeField] private InputField campoSeed;
-        [SerializeField] private InputField campoSteps;
+        [SerializeField] private TMP_InputField campoFilas;
+        [SerializeField] private TMP_InputField campoColumnas;
+        [SerializeField] private TMP_InputField campoHarvesters;
+        [SerializeField] private TMP_InputField campoTractores;
+        [SerializeField] private TMP_InputField campoSeed;
+        [SerializeField] private TMP_InputField campoSteps;
 
         public void EnviarReiniciarDesdeUI()
         {
@@ -57,7 +57,7 @@ namespace Puente
                 steps: ParseOpcional(campoSteps));
         }
 
-        private static int? ParseOpcional(InputField campo)
+        private static int? ParseOpcional(TMP_InputField campo)
         {
             if (campo == null || string.IsNullOrWhiteSpace(campo.text))
                 return null;
