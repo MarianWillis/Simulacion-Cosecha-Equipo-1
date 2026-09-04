@@ -1,65 +1,41 @@
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-// Auto-assigns per-part PBR materials to tractorv2.obj on import, since the
-// source mesh has no materials baked in (only named object groups per part).
+// tractorv2.obj declares "usemtl <name>" per part (see patch in the .obj/.mtl),
+// with names matching the real material assets below 1:1. AddRemap wires each
+// submesh directly to our PBR material on import, instead of Unity generating
+// placeholder materials or relying on folder-search-by-name.
 public class TractorMaterialAssigner : AssetPostprocessor
 {
     private const string TargetModelFileName = "tractorv2.obj";
     private const string MaterialFolder = "Assets/obj/tractor/material";
 
-    private static readonly (string NameContains, string MaterialName)[] PartMap =
+    private static readonly string[] MaterialNames =
     {
-        ("window", "Tractor_Glass"),
-        ("wheel", "Tractor_Tire"),
-        ("headlight", "Tractor_Headlight"),
-        ("grille_lower", "Tractor_Accent_Yellow"), // checked before the generic "grille" match below
-        ("grille", "Tractor_Grille"),
-        ("exhaust", "Tractor_Exhaust"),
-        ("frame", "Tractor_Frame"),
-        // cab, hood, roof, fender_* fall through to the body paint below.
+        "Tractor_Body_Paint",
+        "Tractor_Tire",
+        "Tractor_Frame",
+        "Tractor_Glass",
+        "Tractor_Grille",
+        "Tractor_Headlight",
+        "Tractor_Exhaust",
+        "Tractor_Accent_Yellow",
     };
 
-    private const string DefaultMaterialName = "Tractor_Body_Paint";
-
-    void OnPostprocessModel(GameObject root)
+    void OnPreprocessModel()
     {
         if (!assetPath.EndsWith(TargetModelFileName)) return;
 
-        var cache = new Dictionary<string, Material>();
-        foreach (var renderer in root.GetComponentsInChildren<MeshRenderer>(true))
+        var modelImporter = (ModelImporter)assetImporter;
+        foreach (var materialName in MaterialNames)
         {
-            var materialName = ResolveMaterialName(renderer.gameObject.name);
-            var material = LoadMaterial(materialName, cache);
-            if (material != null)
+            var material = AssetDatabase.LoadAssetAtPath<Material>($"{MaterialFolder}/{materialName}.mat");
+            if (material == null)
             {
-                renderer.sharedMaterial = material;
+                Debug.LogWarning($"TractorMaterialAssigner: could not find material '{materialName}'");
+                continue;
             }
+            modelImporter.AddRemap(new AssetImporter.SourceAssetIdentifier(typeof(Material), materialName), material);
         }
-    }
-
-    private static string ResolveMaterialName(string partName)
-    {
-        var lower = partName.ToLowerInvariant();
-        foreach (var (nameContains, materialName) in PartMap)
-        {
-            if (lower.Contains(nameContains)) return materialName;
-        }
-        return DefaultMaterialName;
-    }
-
-    private static Material LoadMaterial(string materialName, Dictionary<string, Material> cache)
-    {
-        if (cache.TryGetValue(materialName, out var cached)) return cached;
-
-        var path = $"{MaterialFolder}/{materialName}.mat";
-        var material = AssetDatabase.LoadAssetAtPath<Material>(path);
-        if (material == null)
-        {
-            Debug.LogWarning($"TractorMaterialAssigner: could not find material at {path}");
-        }
-        cache[materialName] = material;
-        return material;
     }
 }
