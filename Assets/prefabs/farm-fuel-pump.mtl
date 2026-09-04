@@ -1,0 +1,55 @@
+# Exported by three-d-stage
+newmtl concrete
+Kd 0.1590 0.1620 0.1812
+Ks 0.2000 0.2000 0.2000
+Ns 10
+d 1.0000
+
+newmtl steel
+Kd 0.2582 0.2789 0.3185
+Ks 0.2000 0.2000 0.2000
+Ns 124
+d 1.0000
+
+newmtl shell_red
+Kd 0.3916 0.0331 0.0252
+Ks 0.2000 0.2000 0.2000
+Ns 110
+d 1.0000
+
+newmtl trim_bone
+Kd 0.6939 0.6514 0.5520
+Ks 0.2000 0.2000 0.2000
+Ns 90
+d 1.0000
+
+newmtl rubber_black
+Kd 0.0123 0.0130 0.0176
+Ks 0.2000 0.2000 0.2000
+Ns 20
+d 1.0000
+
+newmtl display_glow
+Kd 0.2831 0.2307 0.6939
+Ks 0.2000 0.2000 0.2000
+Ns 120
+d 1.0000
+
+newmtl safety_yellow
+Kd 0.6445 0.3763 0.0252
+Ks 0.2000 0.2000 0.2000
+Ns 80
+d 1.0000
+
+newmtl display_glass
+Kd 0.0075 0.0091 0.0232
+Ks 0.2000 0.2000 0.2000
+Ns 160
+d 1.0000
+
+newmtl brass
+Kd 0.4342 0.2542 0.0595
+Ks 0.2000 0.2000 0.2000
+Ns 130
+d 1.0000
+
