@@ -14,6 +14,7 @@ public class TractorMaterialAssigner : AssetPostprocessor
         ("window", "Tractor_Glass"),
         ("wheel", "Tractor_Tire"),
         ("headlight", "Tractor_Headlight"),
+        ("grille_lower", "Tractor_Accent_Yellow"), // checked before the generic "grille" match below
         ("grille", "Tractor_Grille"),
         ("exhaust", "Tractor_Exhaust"),
         ("frame", "Tractor_Frame"),
