@@ -20,6 +20,7 @@ public class TractorMaterialAssigner : AssetPostprocessor
         "Tractor_Headlight",
         "Tractor_Exhaust",
         "Tractor_Accent_Yellow",
+        "Tractor_Logo",
     };
 
     void OnPreprocessModel()

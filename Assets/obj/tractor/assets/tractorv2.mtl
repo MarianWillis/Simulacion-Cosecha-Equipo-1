@@ -54,3 +54,9 @@ Ks 0 0 0
 d 1
 illum 2
 
+newmtl Tractor_Logo
+Kd 1 1 1
+Ka 0 0 0
+Ks 0 0 0
+d 1
+illum 2
