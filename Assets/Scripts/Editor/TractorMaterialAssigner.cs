@@ -28,6 +28,14 @@ public class TractorMaterialAssigner : AssetPostprocessor
         if (!assetPath.EndsWith(TargetModelFileName)) return;
 
         var modelImporter = (ModelImporter)assetImporter;
+
+        // Round-looking parts (wheels) are faceted cylinders with no baked
+        // normals; smoothing below ~90 degrees rounds those facets while
+        // leaving the tractor's real 90-degree box corners crisp.
+        modelImporter.importNormals = ModelImporterNormals.Calculate;
+        modelImporter.normalCalculationMode = ModelImporterNormalCalculationMode.AreaAndAngleWeighted;
+        modelImporter.normalSmoothingAngle = 45f;
+
         foreach (var materialName in MaterialNames)
         {
             var material = AssetDatabase.LoadAssetAtPath<Material>($"{MaterialFolder}/{materialName}.mat");
