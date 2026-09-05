@@ -10,15 +10,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 15fe16b14bdef4712ae2a6df695764c3, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -1.4348178
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 15fe16b14bdef4712ae2a6df695764c3, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.000000372189
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 15fe16b14bdef4712ae2a6df695764c3, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -14.645909
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 15fe16b14bdef4712ae2a6df695764c3, type: 3}
       propertyPath: m_LocalRotation.w
@@ -52,31 +52,28 @@ PrefabInstance:
       propertyPath: m_Name
       value: tractorv2
       objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 15fe16b14bdef4712ae2a6df695764c3, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 15fe16b14bdef4712ae2a6df695764c3, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 15fe16b14bdef4712ae2a6df695764c3, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 15fe16b14bdef4712ae2a6df695764c3, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 15fe16b14bdef4712ae2a6df695764c3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: -90
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 15fe16b14bdef4712ae2a6df695764c3, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 5661479576919818535}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 15fe16b14bdef4712ae2a6df695764c3, type: 3}
---- !u!1 &1523997958834188268 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 15fe16b14bdef4712ae2a6df695764c3, type: 3}
-  m_PrefabInstance: {fileID: 1866528466664837821}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &5661479576919818535
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1523997958834188268}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6711b1a9e6d524efe88c2d26de56b7d3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EngineIdleVibration
-  amplitudPosicion: 0.008
-  amplitudRotacionGrados: 0.35
-  frecuencia: 18

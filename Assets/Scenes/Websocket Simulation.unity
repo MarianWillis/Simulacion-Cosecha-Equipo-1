@@ -586,7 +586,7 @@ MonoBehaviour:
   prefabObstaculoRoca: {fileID: 2658360238327246033, guid: ed157de0c41a3f541b505a2ab8605cb1, type: 3}
   prefabObstaculoPoste: {fileID: 7550840344629051563, guid: 8e31931fc5c49394fa635facecaec5fa, type: 3}
   prefabSilo: {fileID: 3669826984258132693, guid: 9ca20e7ed8ce1934989652ba2dc3f9e6, type: 3}
-  prefabBase: {fileID: 7550818800950148947, guid: 858be66d2d8b9ec4da2280265413db1c, type: 3}
+  prefabBase: {fileID: 8050299949328180838, guid: f0c81b91dcfb49e4b9d2b54746c6eb76, type: 3}
   tamCelda: 35
   intervaloEsperadoEntrePasos: 0.6
 --- !u!114 &181841393
@@ -4621,7 +4621,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 600, y: 248}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1513563007
@@ -4659,7 +4659,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 178, y: 166}
+  m_AnchoredPosition: {x: 778, y: 414}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1001 &1572967094
@@ -5108,13 +5108,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1679985937}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.5, y: 0.5, z: -0.5, w: 0.5}
-  m_LocalPosition: {x: 290, y: 565, z: 644}
+  m_LocalRotation: {x: 0.5, y: -0.5, z: 0.5, w: 0.5}
+  m_LocalPosition: {x: 430, y: 990, z: 714}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 90, y: 90, z: 0}
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 90}
 --- !u!114 &1679985941
 MonoBehaviour:
   m_ObjectHideFlags: 0
