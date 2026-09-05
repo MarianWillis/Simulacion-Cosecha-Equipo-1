@@ -162,6 +162,19 @@ namespace Puente
             }
 
             UltimasMetricas = paso.metricas;
+
+            string gasolinaPorAgente = string.Join(", ",
+                paso.agentes.ConvertAll(a => $"{a.clase}#{a.id}={a.gasolina:F1}"));
+            string cosechadoPorHarvester = string.Join(", ",
+                paso.agentes.FindAll(a => a.clase == "harvester")
+                    .ConvertAll(a => $"harvester#{a.id}={a.cosechado_total}"));
+            Debug.Log($"[t={paso.t}] cosechado={paso.metricas.cosechado_pct:F1}% " +
+                $"entregado={paso.metricas.grano_entregado} " +
+                $"recargas={paso.metricas.recargas_totales} " +
+                $"distancia={paso.metricas.distancia_total} " +
+                $"descomposturas={paso.metricas.descomposturas_totales} " +
+                $"gasolina=[{gasolinaPorAgente}] " +
+                $"cosechado_x_harvester=[{cosechadoPorHarvester}]");
         }
 
         public void ManejarFin(FinDTO fin)

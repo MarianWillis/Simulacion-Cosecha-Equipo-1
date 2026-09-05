@@ -25,6 +25,10 @@ namespace Puente
         [SerializeField] private TMP_InputField campoColumnas;
         [SerializeField] private TMP_InputField campoHarvesters;
         [SerializeField] private TMP_InputField campoTractores;
+        [SerializeField] private TMP_InputField campoPctObstaculos;
+        [SerializeField] private TMP_InputField campoCapacidadHarvester;
+        [SerializeField] private TMP_InputField campoCapacidadTractor;
+        [SerializeField] private TMP_InputField campoProbDescompostura;
         [SerializeField] private TMP_InputField campoSeed;
         [SerializeField] private TMP_InputField campoSteps;
 
@@ -53,6 +57,10 @@ namespace Puente
                 shape: shape,
                 nHarvesters: ParseOpcional(campoHarvesters),
                 nTractores: ParseOpcional(campoTractores),
+                pctObstaculos: ParseOpcionalFloat(campoPctObstaculos),
+                capacidadHarvester: ParseOpcional(campoCapacidadHarvester),
+                capacidadTractor: ParseOpcional(campoCapacidadTractor),
+                probDescompostura: ParseOpcionalFloat(campoProbDescompostura),
                 seed: ParseOpcional(campoSeed),
                 steps: ParseOpcional(campoSteps));
         }
@@ -63,6 +71,19 @@ namespace Puente
                 return null;
 
             if (int.TryParse(campo.text, out var valor))
+                return valor;
+
+            Debug.LogWarning($"Valor invalido en '{campo.name}': '{campo.text}'");
+            return null;
+        }
+
+        private static float? ParseOpcionalFloat(TMP_InputField campo)
+        {
+            if (campo == null || string.IsNullOrWhiteSpace(campo.text))
+                return null;
+
+            if (float.TryParse(campo.text, System.Globalization.NumberStyles.Float,
+                    System.Globalization.CultureInfo.InvariantCulture, out var valor))
                 return valor;
 
             Debug.LogWarning($"Valor invalido en '{campo.name}': '{campo.text}'");

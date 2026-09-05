@@ -63,6 +63,11 @@ namespace Puente
         public string estado;
         public float gasolina;
         public int carga;
+
+        // Solo aplica a harvesters (los tractores siempre mandan 0). A
+        // diferencia de `carga`, que baja al descargar en el tractor, este
+        // es el total acumulado de celdas cosechadas desde que arranco la sim.
+        public int cosechado_total;
     }
 
     [Serializable]
@@ -70,7 +75,9 @@ namespace Puente
     {
         public float cosechado_pct;
         public int grano_entregado;
-        public float gasolina_total;
+        public int recargas_totales;
+        public int distancia_total;
+        public int descomposturas_totales;
     }
 
     [Serializable]
@@ -107,6 +114,10 @@ namespace Puente
         public int[] shape;
         public int? n_harvesters;
         public int? n_tractores;
+        public float? pct_obstaculos;
+        public int? capacidad_harvester;
+        public int? capacidad_tractor;
+        public float? prob_descompostura;
         public int? seed;
         public int? steps;
     }

@@ -120,7 +120,9 @@ namespace Puente
         /// valor actual de ese parametro (ver PARAMETROS en granja.py).
         /// </summary>
         public void EnviarReiniciar(int[] shape = null, int? nHarvesters = null,
-            int? nTractores = null, int? seed = null, int? steps = null)
+            int? nTractores = null, float? pctObstaculos = null,
+            int? capacidadHarvester = null, int? capacidadTractor = null,
+            float? probDescompostura = null, int? seed = null, int? steps = null)
         {
             EnviarComando(new ComandoReiniciarDTO
             {
@@ -129,6 +131,10 @@ namespace Puente
                     shape = shape,
                     n_harvesters = nHarvesters,
                     n_tractores = nTractores,
+                    pct_obstaculos = pctObstaculos,
+                    capacidad_harvester = capacidadHarvester,
+                    capacidad_tractor = capacidadTractor,
+                    prob_descompostura = probDescompostura,
                     seed = seed,
                     steps = steps,
                 }
