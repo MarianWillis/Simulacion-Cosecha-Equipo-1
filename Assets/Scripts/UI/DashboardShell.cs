@@ -178,7 +178,7 @@ namespace FarmDashboard
             hover.NormalColor = Color.clear;
             hover.HoverColor = UITheme.ChipBg;
 
-            var iconHost = UIBuilder.Panel(btnRoot, "IconHost", UITheme.ChipBg, UITheme.RadiusChip);
+            var iconHost = UIBuilder.Panel(btnRoot, "IconHost", UITheme.ChipBg, 5f); // squarer than the default chip radius -- reads as a rounded square, not a circle, at 28x28
             UIBuilder.Flex(iconHost, 0, 0, 28, 28, 28, 28);
             drawIcon(iconHost);
 

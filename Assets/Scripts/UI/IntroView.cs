@@ -34,11 +34,11 @@ namespace FarmDashboard
             // Soft radial glow behind the logo -- a real gradient (SoftGlowSprite),
             // not a 9-sliced rounded-rect mask, so it actually fades out instead
             // of showing a hard circular edge.
-            var glow = UIBuilder.Rect(root, "Glow", new Color(UITheme.GreenPrimary.r, UITheme.GreenPrimary.g, UITheme.GreenPrimary.b, 0.35f));
+            var glow = UIBuilder.Rect(root, "Glow", new Color(UITheme.GreenPrimary.r, UITheme.GreenPrimary.g, UITheme.GreenPrimary.b, 0.55f));
             var glowImg = glow.GetComponent<Image>();
             glowImg.sprite = UIBuilder.SoftGlowSprite();
             glowImg.type = Image.Type.Simple;
-            glow.sizeDelta = new Vector2(320, 320);
+            glow.sizeDelta = new Vector2(420, 420);
             glow.anchorMin = glow.anchorMax = new Vector2(0.5f, 0.5f);
             glow.anchoredPosition = Vector2.zero;
 
@@ -50,7 +50,7 @@ namespace FarmDashboard
             // a short wide rectangle). false lets each child keep its own preferred
             // width -- the logo stays 120x120, and the text hosts still center fine
             // via childAlignment since their preferred width already matches their text.
-            var column = UIBuilder.VCol(root, "Column", gap: 20, align: TextAnchor.MiddleCenter, controlWidth: true, controlHeight: true, forceExpand: false);
+            var column = UIBuilder.VCol(root, "Column", gap: 32, align: TextAnchor.MiddleCenter, controlWidth: true, controlHeight: true, forceExpand: false);
             column.anchorMin = column.anchorMax = new Vector2(0.5f, 0.5f);
             column.pivot = new Vector2(0.5f, 0.5f);
             column.sizeDelta = new Vector2(560, 0);
