@@ -81,6 +81,46 @@ namespace FarmDashboard
             return sprite;
         }
 
+        private static Sprite _softGlowSprite;
+
+        // A true radial gradient (opaque center fading smoothly to fully
+        // transparent at the edge) for soft glows/shadows -- NOT sliced, since
+        // slicing only makes sense for hard-edged corner masks like RoundedSprite.
+        // One shared 256x256 texture is reused for every glow regardless of the
+        // RectTransform size it's stretched onto (Image.Type.Simple).
+        public static Sprite SoftGlowSprite()
+        {
+            if (_softGlowSprite != null) return _softGlowSprite;
+
+            const int size = 256;
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false)
+            {
+                filterMode = FilterMode.Bilinear,
+                wrapMode = TextureWrapMode.Clamp,
+                name = "SoftGlow",
+            };
+            var pixels = new Color32[size * size];
+            var center = new Vector2(size / 2f, size / 2f);
+            float maxDist = size / 2f;
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float dist = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), center) / maxDist;
+                    // smoothstep falloff, fully opaque core fading out past ~40% radius
+                    float t = Mathf.Clamp01(dist);
+                    float alpha = 1f - (t * t * (3f - 2f * t));
+                    pixels[y * size + x] = new Color32(255, 255, 255, (byte)(alpha * 255));
+                }
+            }
+            tex.SetPixels32(pixels);
+            tex.Apply();
+
+            _softGlowSprite = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f);
+            _softGlowSprite.name = "SoftGlowSprite";
+            return _softGlowSprite;
+        }
+
         public static RectTransform NewRect(Transform parent, string name)
         {
             var go = new GameObject(name, typeof(RectTransform));

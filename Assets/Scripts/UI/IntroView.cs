@@ -31,12 +31,14 @@ namespace FarmDashboard
             gameObject.AddComponent<Image>().color = UITheme.BgBase;
             _rootGroup = gameObject.AddComponent<CanvasGroup>();
 
-            // Soft radial glow behind the logo.
-            var glow = UIBuilder.Rect(root, "Glow", new Color(UITheme.GreenPrimary.r, UITheme.GreenPrimary.g, UITheme.GreenPrimary.b, 0.16f));
+            // Soft radial glow behind the logo -- a real gradient (SoftGlowSprite),
+            // not a 9-sliced rounded-rect mask, so it actually fades out instead
+            // of showing a hard circular edge.
+            var glow = UIBuilder.Rect(root, "Glow", new Color(UITheme.GreenPrimary.r, UITheme.GreenPrimary.g, UITheme.GreenPrimary.b, 0.35f));
             var glowImg = glow.GetComponent<Image>();
-            glowImg.sprite = UIBuilder.RoundedSprite(130); // soft round shape, approximates the CSS radial-gradient glow
-            glowImg.type = Image.Type.Sliced;
-            glow.sizeDelta = new Vector2(260, 260);
+            glowImg.sprite = UIBuilder.SoftGlowSprite();
+            glowImg.type = Image.Type.Simple;
+            glow.sizeDelta = new Vector2(320, 320);
             glow.anchorMin = glow.anchorMax = new Vector2(0.5f, 0.5f);
             glow.anchoredPosition = Vector2.zero;
 
@@ -68,11 +70,17 @@ namespace FarmDashboard
             UIBuilder.Flex(logoHost, 0, 0, 120, 120, 120, 120);
             var logoGroup = logoHost.gameObject.AddComponent<CanvasGroup>();
 
-            // Faux drop-shadow: soft dark rounded rect behind, offset down.
-            var shadow = UIBuilder.Panel(logoHost, "LogoShadow", new Color(0, 0, 0, 0.35f), 30);
+            // Faux drop-shadow: soft dark glow behind, offset down. Uses the same
+            // radial-gradient sprite as the background glow (not a rounded-rect
+            // mask) so it actually blurs out instead of showing a hard edge.
+            var shadow = UIBuilder.NewRect(logoHost, "LogoShadow");
+            var shadowImg = shadow.gameObject.AddComponent<Image>();
+            shadowImg.sprite = UIBuilder.SoftGlowSprite();
+            shadowImg.type = Image.Type.Simple;
+            shadowImg.color = new Color(0, 0, 0, 0.45f);
             shadow.anchorMin = shadow.anchorMax = new Vector2(0.5f, 0.5f);
-            shadow.sizeDelta = new Vector2(150, 150);
-            shadow.anchoredPosition = new Vector2(0, -14);
+            shadow.sizeDelta = new Vector2(200, 200);
+            shadow.anchoredPosition = new Vector2(0, -10);
 
             var tile = UIBuilder.Panel(logoHost, "LogoTile", UITheme.ChipBg, 22);
             tile.anchorMin = Vector2.zero;
