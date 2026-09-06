@@ -88,24 +88,24 @@ namespace FarmDashboard
             tile.offsetMin = Vector2.zero;
             tile.offsetMax = Vector2.zero;
 
-            var grid = UIBuilder.VCol(tile, "Grid2x2", gap: 3, padding: new RectOffset(3, 3, 3, 3), controlWidth: true, controlHeight: true, forceExpand: true);
+            var grid = UIBuilder.VCol(tile, "Grid2x2", gap: 2, padding: new RectOffset(2, 2, 2, 2), controlWidth: true, controlHeight: true, forceExpand: true);
             grid.anchorMin = Vector2.zero;
             grid.anchorMax = Vector2.one;
             grid.offsetMin = Vector2.zero;
             grid.offsetMax = Vector2.zero;
 
-            var topRow = UIBuilder.HRow(grid, "TopRow", gap: 3, controlWidth: true, controlHeight: true, forceExpand: true);
+            var topRow = UIBuilder.HRow(grid, "TopRow", gap: 2, controlWidth: true, controlHeight: true, forceExpand: true);
             UIBuilder.Flex(topRow, 1, 1);
-            // Cell size: tile is 120x120, minus 3px padding each side (114x114
-            // inner), minus the 3px gap between the two columns/rows, split in two.
-            const int cellSize = 56;
-            var tl = UIBuilder.Panel(topRow, "TL", UITheme.GreenPrimary, 7, exactWidth: cellSize, exactHeight: cellSize); UIBuilder.Flex(tl, 1, 1);
-            var tr = UIBuilder.Panel(topRow, "TR", UITheme.GoldAccent, 7, exactWidth: cellSize, exactHeight: cellSize); UIBuilder.Flex(tr, 1, 1);
+            // Cell size: tile is 120x120, minus 2px padding each side (116x116
+            // inner), minus the 2px gap between the two columns/rows, split in two.
+            const int cellSize = 57;
+            var tl = UIBuilder.Panel(topRow, "TL", UITheme.GreenPrimary, 6, exactWidth: cellSize, exactHeight: cellSize); UIBuilder.Flex(tl, 1, 1);
+            var tr = UIBuilder.Panel(topRow, "TR", UITheme.GoldAccent, 6, exactWidth: cellSize, exactHeight: cellSize); UIBuilder.Flex(tr, 1, 1);
 
-            var bottomRow = UIBuilder.HRow(grid, "BottomRow", gap: 3, controlWidth: true, controlHeight: true, forceExpand: true);
+            var bottomRow = UIBuilder.HRow(grid, "BottomRow", gap: 2, controlWidth: true, controlHeight: true, forceExpand: true);
             UIBuilder.Flex(bottomRow, 1, 1);
-            var bl = UIBuilder.Panel(bottomRow, "BL", UITheme.GreenDark, 7, exactWidth: cellSize, exactHeight: cellSize); UIBuilder.Flex(bl, 1, 1);
-            var br = UIBuilder.Panel(bottomRow, "BR", UITheme.BrownAccent, 7, exactWidth: cellSize, exactHeight: cellSize); UIBuilder.Flex(br, 1, 1);
+            var bl = UIBuilder.Panel(bottomRow, "BL", UITheme.GreenDark, 6, exactWidth: cellSize, exactHeight: cellSize); UIBuilder.Flex(bl, 1, 1);
+            var br = UIBuilder.Panel(bottomRow, "BR", UITheme.BrownAccent, 6, exactWidth: cellSize, exactHeight: cellSize); UIBuilder.Flex(br, 1, 1);
 
             StartCoroutine(UITween.ScaleFadeIn((RectTransform)logoHost, logoGroup, 0.25f, 0.9f));
         }
