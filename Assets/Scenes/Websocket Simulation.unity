@@ -6714,7 +6714,7 @@ MonoBehaviour:
   prefabSilo: {fileID: 3669826984258132693, guid: 9ca20e7ed8ce1934989652ba2dc3f9e6, type: 3}
   prefabBase: {fileID: 8050299949328180838, guid: f0c81b91dcfb49e4b9d2b54746c6eb76, type: 3}
   tamCelda: 35
-  intervaloEsperadoEntrePasos: 0.6
+  intervaloEsperadoEntrePasos: 0.2
 --- !u!114 &181841393
 MonoBehaviour:
   m_ObjectHideFlags: 0
