@@ -50,10 +50,24 @@ namespace FarmDashboard
                 {
                     float px = x + 0.5f;
                     float py = y + 0.5f;
-                    float cx = Mathf.Clamp(px, r, size - r);
-                    float cy = Mathf.Clamp(py, r, size - r);
-                    float dist = Vector2.Distance(new Vector2(px, py), new Vector2(cx, cy));
-                    float alpha = Mathf.Clamp01(r - dist + 0.5f);
+                    bool xOutside = px < r || px > size - r;
+                    bool yOutside = py < r || py > size - r;
+                    float alpha;
+                    if (xOutside && yOutside)
+                    {
+                        // Only the four true corner zones need the circular falloff --
+                        // straight edges (only one axis outside the inset rect) must
+                        // stay fully opaque all the way to the image boundary, or the
+                        // whole shape reads as a soft blob instead of a rounded square.
+                        float cx = px < r ? r : size - r;
+                        float cy = py < r ? r : size - r;
+                        float dist = Vector2.Distance(new Vector2(px, py), new Vector2(cx, cy));
+                        alpha = Mathf.Clamp01(r - dist + 0.5f);
+                    }
+                    else
+                    {
+                        alpha = 1f;
+                    }
                     pixels[y * size + x] = new Color32(255, 255, 255, (byte)(alpha * 255));
                 }
             }
