@@ -19,6 +19,7 @@ namespace FarmDashboard
         private DashboardState _state;
         private RectTransform _canvasRoot;
         private DashboardShell _shell;
+        private SimulationDataAdapter _liveData;
         private float _tickTimer;
 
         private void Awake()
@@ -53,6 +54,13 @@ namespace FarmDashboard
             intro.Init(brandName, OnIntroComplete);
 
             _state.RebuildVehicles();
+
+            // If the scene has the real simulation bridge (Puente/GestorSimulacion),
+            // this takes over the state's Vehicles/Tick/metrics from the server and
+            // Update() below stops running the demo tick. See SimulationDataAdapter.
+            _liveData = gameObject.AddComponent<SimulationDataAdapter>();
+            _liveData.Init(_state);
+
             if (autoPlayOnLoad) StartRun();
         }
 
@@ -90,6 +98,7 @@ namespace FarmDashboard
 
         private void Update()
         {
+            if (_state.UsingLiveData) return; // real data drives Vehicles/Tick instead
             if (!_state.Running) return;
             _tickTimer += Time.deltaTime * 1000f;
             if (_tickTimer >= tickSpeedMs)
@@ -99,6 +108,10 @@ namespace FarmDashboard
                 if (!_state.Running) _shell.RefreshRunningControls();
             }
         }
+
+        // Exposed for the Home view (next phase) to wire Resume/Pause/Restart to
+        // the real simulation instead of the demo tick, when UsingLiveData is true.
+        public SimulationDataAdapter LiveData => _liveData;
 
         public void StartRun()
         {

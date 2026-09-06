@@ -15,10 +15,23 @@ namespace FarmDashboard
         public string Id;
         public VehicleType Type;
         public string Label;
+
+        // Demo-sim-only (see DashboardState.TickDemo): a serpentine path index
+        // that ComputePos() turns into a grid cell. Real server data instead
+        // sets Fila/Col directly from the agent's actual reported position.
         public int StepIndex;
+        public int Fila;
+        public int Col;
+
         public float Fuel = 100f;
         public int Rounds;
+        public int CosechadoTotal;
+        public int Carga;
         public VehicleStatus Status = VehicleStatus.Activo;
+        // Raw "estado" string as sent by the Python server -- kept alongside
+        // the best-effort Status enum mapping (see SimulationDataAdapter)
+        // since the exact server vocabulary isn't confirmed from this repo.
+        public string EstadoRaw;
         public int RechargeTicks;
         public float Distancia;
     }
@@ -61,6 +74,19 @@ namespace FarmDashboard
         public DashView View = DashView.Home;
         public string DetailVehicleId;
 
+        // When true, SimulationDataAdapter is feeding real server data via
+        // GestorSimulacion's events -- DashboardBootstrap must not also run
+        // TickDemo(), or the two data sources would fight over Vehicles/Tick.
+        public bool UsingLiveData;
+
+        // Aggregate metrics from the server's MetricasDTO (see SimulationDataAdapter).
+        // Only meaningful when UsingLiveData is true.
+        public float CosechadoPctServer;
+        public int GranoEntregado;
+        public int RecargasTotales;
+        public int DistanciaTotalServer;
+        public int DescomposturasTotales;
+
         public event Action Changed;
         public void NotifyChanged() => Changed?.Invoke();
 
@@ -86,6 +112,12 @@ namespace FarmDashboard
                     Label = "Cosechador " + (i + 1),
                     StepIndex = i * 11 + 3,
                 });
+            }
+            foreach (var v in Vehicles)
+            {
+                var pos = ComputePos(v.StepIndex);
+                v.Fila = pos.row;
+                v.Col = pos.col;
             }
             Tick = 0;
             NotifyChanged();
@@ -127,6 +159,10 @@ namespace FarmDashboard
                 v.Fuel = Math.Max(0f, v.Fuel - (v.Type == VehicleType.Cosechador ? 1.6f : 1.1f));
                 if (v.Type == VehicleType.Cosechador && wrapped) v.Status = VehicleStatus.Descargando;
                 else v.Status = (v.StepIndex % 5 == 0) ? VehicleStatus.EnCamino : VehicleStatus.Activo;
+
+                var pos = ComputePos(v.StepIndex);
+                v.Fila = pos.row;
+                v.Col = pos.col;
             }
 
             Tick += 1;
