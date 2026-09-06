@@ -2,6 +2,7 @@ using System.IO;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.TextCore.LowLevel;
 
 // Auto-generates a TMP_FontAsset (dynamic SDF atlas) for every raw .ttf under
 // Assets/UI/Fonts/ the moment it's imported, so the UI Toolkit-free/uGUI code
