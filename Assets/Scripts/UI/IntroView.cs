@@ -42,7 +42,7 @@ namespace FarmDashboard
 
             // Centered column: logo, brand name, subtitle. Built with a VerticalLayoutGroup
             // acting as flex column + gap:20px, sized to content and centered on screen.
-            var column = UIBuilder.VCol(root, "Column", gap: 20, align: TextAnchor.MiddleCenter, controlWidth: true, controlHeight: false, forceExpand: true);
+            var column = UIBuilder.VCol(root, "Column", gap: 20, align: TextAnchor.MiddleCenter, controlWidth: true, controlHeight: true, forceExpand: true);
             column.anchorMin = column.anchorMax = new Vector2(0.5f, 0.5f);
             column.pivot = new Vector2(0.5f, 0.5f);
             column.sizeDelta = new Vector2(560, 0);

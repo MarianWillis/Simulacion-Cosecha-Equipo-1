@@ -147,7 +147,7 @@ namespace FarmDashboard
 
         private void BuildSidebar(Transform parent)
         {
-            var sidebar = UIBuilder.VCol(parent, "Sidebar", gap: 8, padding: new RectOffset(0, 0, 12, 12), controlWidth: true, controlHeight: false, align: TextAnchor.UpperCenter);
+            var sidebar = UIBuilder.VCol(parent, "Sidebar", gap: 8, padding: new RectOffset(0, 0, 12, 12), controlWidth: true, controlHeight: true, align: TextAnchor.UpperCenter);
             UIBuilder.Flex(sidebar, 0, 0, 72, -1, 72, -1);
 
             AddNavButton(sidebar, DashView.Home, "Home", host => IconFactory.House(host, UITheme.BgBase), isHomeButton: true);
@@ -160,7 +160,7 @@ namespace FarmDashboard
 
         private void AddNavButton(Transform parent, DashView view, string label, System.Action<Transform> drawIcon, bool isHomeButton = false)
         {
-            var btnRoot = UIBuilder.VCol(parent, $"Nav_{view}", gap: 6, padding: new RectOffset(4, 4, 12, 12), align: TextAnchor.UpperCenter, controlWidth: true, controlHeight: false);
+            var btnRoot = UIBuilder.VCol(parent, $"Nav_{view}", gap: 6, padding: new RectOffset(4, 4, 12, 12), align: TextAnchor.UpperCenter, controlWidth: true, controlHeight: true);
             UIBuilder.Flex(btnRoot, 0, 0, -1, 60, -1, 60);
             var bg = btnRoot.gameObject.AddComponent<Image>();
             bg.sprite = UIBuilder.RoundedSprite(Mathf.RoundToInt(UITheme.RadiusNested));
