@@ -31,19 +31,6 @@ namespace FarmDashboard
             gameObject.AddComponent<Image>().color = UITheme.BgBase;
             _rootGroup = gameObject.AddComponent<CanvasGroup>();
 
-            // Soft radial glow behind the logo -- a real gradient (SoftGlowSprite),
-            // not a 9-sliced rounded-rect mask, so it actually fades out instead
-            // of showing a hard circular edge.
-            // Back to the README's spec values (18% opacity, 260px) -- the earlier
-            // bump to compensate for looking "disconnected" was covering for the
-            // circle-mask bug (now fixed), not an actual intensity problem.
-            var glow = UIBuilder.Rect(root, "Glow", new Color(UITheme.GreenPrimary.r, UITheme.GreenPrimary.g, UITheme.GreenPrimary.b, 0.18f));
-            var glowImg = glow.GetComponent<Image>();
-            glowImg.sprite = UIBuilder.SoftGlowSprite();
-            glowImg.type = Image.Type.Simple;
-            glow.sizeDelta = new Vector2(260, 260);
-            glow.anchorMin = glow.anchorMax = new Vector2(0.5f, 0.5f);
-            glow.anchoredPosition = Vector2.zero;
 
             // Centered column: logo, brand name, subtitle. Built with a VerticalLayoutGroup
             // acting as flex column + gap:20px, sized to content and centered on screen.
