@@ -34,11 +34,14 @@ namespace FarmDashboard
             // Soft radial glow behind the logo -- a real gradient (SoftGlowSprite),
             // not a 9-sliced rounded-rect mask, so it actually fades out instead
             // of showing a hard circular edge.
-            var glow = UIBuilder.Rect(root, "Glow", new Color(UITheme.GreenPrimary.r, UITheme.GreenPrimary.g, UITheme.GreenPrimary.b, 0.55f));
+            // Back to the README's spec values (18% opacity, 260px) -- the earlier
+            // bump to compensate for looking "disconnected" was covering for the
+            // circle-mask bug (now fixed), not an actual intensity problem.
+            var glow = UIBuilder.Rect(root, "Glow", new Color(UITheme.GreenPrimary.r, UITheme.GreenPrimary.g, UITheme.GreenPrimary.b, 0.18f));
             var glowImg = glow.GetComponent<Image>();
             glowImg.sprite = UIBuilder.SoftGlowSprite();
             glowImg.type = Image.Type.Simple;
-            glow.sizeDelta = new Vector2(420, 420);
+            glow.sizeDelta = new Vector2(260, 260);
             glow.anchorMin = glow.anchorMax = new Vector2(0.5f, 0.5f);
             glow.anchoredPosition = Vector2.zero;
 
@@ -77,10 +80,10 @@ namespace FarmDashboard
             var shadowImg = shadow.gameObject.AddComponent<Image>();
             shadowImg.sprite = UIBuilder.SoftGlowSprite();
             shadowImg.type = Image.Type.Simple;
-            shadowImg.color = new Color(0, 0, 0, 0.45f);
+            shadowImg.color = new Color(0, 0, 0, 0.35f);
             shadow.anchorMin = shadow.anchorMax = new Vector2(0.5f, 0.5f);
-            shadow.sizeDelta = new Vector2(200, 200);
-            shadow.anchoredPosition = new Vector2(0, -10);
+            shadow.sizeDelta = new Vector2(150, 150);
+            shadow.anchoredPosition = new Vector2(0, -14);
 
             var tile = UIBuilder.Panel(logoHost, "LogoTile", UITheme.ChipBg, 22, exactWidth: 120, exactHeight: 120);
             tile.anchorMin = Vector2.zero;
@@ -88,24 +91,27 @@ namespace FarmDashboard
             tile.offsetMin = Vector2.zero;
             tile.offsetMax = Vector2.zero;
 
-            var grid = UIBuilder.VCol(tile, "Grid2x2", gap: 2, padding: new RectOffset(2, 2, 2, 2), controlWidth: true, controlHeight: true, forceExpand: true);
+            // Back to the README's original spec values (8px padding, 5px gap) --
+            // those were correct all along. The earlier "too much black" complaint
+            // was actually the 9-slice circle bug (now fixed), not the spacing.
+            var grid = UIBuilder.VCol(tile, "Grid2x2", gap: 5, padding: new RectOffset(8, 8, 8, 8), controlWidth: true, controlHeight: true, forceExpand: true);
             grid.anchorMin = Vector2.zero;
             grid.anchorMax = Vector2.one;
             grid.offsetMin = Vector2.zero;
             grid.offsetMax = Vector2.zero;
 
-            var topRow = UIBuilder.HRow(grid, "TopRow", gap: 2, controlWidth: true, controlHeight: true, forceExpand: true);
+            var topRow = UIBuilder.HRow(grid, "TopRow", gap: 5, controlWidth: true, controlHeight: true, forceExpand: true);
             UIBuilder.Flex(topRow, 1, 1);
-            // Cell size: tile is 120x120, minus 2px padding each side (116x116
-            // inner), minus the 2px gap between the two columns/rows, split in two.
-            const int cellSize = 57;
-            var tl = UIBuilder.Panel(topRow, "TL", UITheme.GreenPrimary, 6, exactWidth: cellSize, exactHeight: cellSize); UIBuilder.Flex(tl, 1, 1);
-            var tr = UIBuilder.Panel(topRow, "TR", UITheme.GoldAccent, 6, exactWidth: cellSize, exactHeight: cellSize); UIBuilder.Flex(tr, 1, 1);
+            // Cell size: tile is 120x120, minus 8px padding each side (104x104
+            // inner), minus the 5px gap between the two columns/rows, split in two.
+            const int cellSize = 50;
+            var tl = UIBuilder.Panel(topRow, "TL", UITheme.GreenPrimary, 7, exactWidth: cellSize, exactHeight: cellSize); UIBuilder.Flex(tl, 1, 1);
+            var tr = UIBuilder.Panel(topRow, "TR", UITheme.GoldAccent, 7, exactWidth: cellSize, exactHeight: cellSize); UIBuilder.Flex(tr, 1, 1);
 
-            var bottomRow = UIBuilder.HRow(grid, "BottomRow", gap: 2, controlWidth: true, controlHeight: true, forceExpand: true);
+            var bottomRow = UIBuilder.HRow(grid, "BottomRow", gap: 5, controlWidth: true, controlHeight: true, forceExpand: true);
             UIBuilder.Flex(bottomRow, 1, 1);
-            var bl = UIBuilder.Panel(bottomRow, "BL", UITheme.GreenDark, 6, exactWidth: cellSize, exactHeight: cellSize); UIBuilder.Flex(bl, 1, 1);
-            var br = UIBuilder.Panel(bottomRow, "BR", UITheme.BrownAccent, 6, exactWidth: cellSize, exactHeight: cellSize); UIBuilder.Flex(br, 1, 1);
+            var bl = UIBuilder.Panel(bottomRow, "BL", UITheme.GreenDark, 7, exactWidth: cellSize, exactHeight: cellSize); UIBuilder.Flex(bl, 1, 1);
+            var br = UIBuilder.Panel(bottomRow, "BR", UITheme.BrownAccent, 7, exactWidth: cellSize, exactHeight: cellSize); UIBuilder.Flex(br, 1, 1);
 
             StartCoroutine(UITween.ScaleFadeIn((RectTransform)logoHost, logoGroup, 0.25f, 0.9f));
         }
