@@ -42,7 +42,13 @@ namespace FarmDashboard
 
             // Centered column: logo, brand name, subtitle. Built with a VerticalLayoutGroup
             // acting as flex column + gap:20px, sized to content and centered on screen.
-            var column = UIBuilder.VCol(root, "Column", gap: 20, align: TextAnchor.MiddleCenter, controlWidth: true, controlHeight: true, forceExpand: true);
+            // forceExpand:false is deliberate here -- with it true, Unity's cross-axis
+            // sizing stretches EVERY child to the column's full width regardless of
+            // its own LayoutElement (that's what was squashing the 120x120 logo into
+            // a short wide rectangle). false lets each child keep its own preferred
+            // width -- the logo stays 120x120, and the text hosts still center fine
+            // via childAlignment since their preferred width already matches their text.
+            var column = UIBuilder.VCol(root, "Column", gap: 20, align: TextAnchor.MiddleCenter, controlWidth: true, controlHeight: true, forceExpand: false);
             column.anchorMin = column.anchorMax = new Vector2(0.5f, 0.5f);
             column.pivot = new Vector2(0.5f, 0.5f);
             column.sizeDelta = new Vector2(560, 0);
