@@ -153,15 +153,18 @@ namespace FarmDashboard
             var sidebar = UIBuilder.VCol(parent, "Sidebar", gap: 8, padding: new RectOffset(0, 0, 12, 12), controlWidth: true, controlHeight: true, align: TextAnchor.UpperCenter);
             UIBuilder.Flex(sidebar, 0, 0, 72, -1, 72, -1);
 
-            AddNavButton(sidebar, DashView.Home, "Home", host => IconFactory.House(host, UITheme.BgBase), isHomeButton: true);
-            AddNavButton(sidebar, DashView.Camaras, "Cámaras", host => IconFactory.Camera(host, UITheme.BgBase, UITheme.ChipBg));
-            AddNavButton(sidebar, DashView.Combustible, "Combustible", host => IconFactory.FuelDrop(host, UITheme.BgBase));
-            AddNavButton(sidebar, DashView.Cultivo, "Cultivo", host => IconFactory.CultivoDot(host, UITheme.BgBase));
-            AddNavButton(sidebar, DashView.Tractores, "Tractores", host => IconFactory.Tractor(host, UITheme.BgBase, UITheme.ChipBg));
-            AddNavButton(sidebar, DashView.Cosechadoras, "Cosechadoras", host => IconFactory.Harvester(host, UITheme.BgBase, UITheme.ChipBg));
+            // Each button's icon badge gets its own accent color (matching the
+            // reference design) with a dark glyph on top -- only Home keeps the
+            // flat ChipBg tile, since its "icon" IS the 2x2 color grid itself.
+            AddNavButton(sidebar, DashView.Home, "Home", UITheme.ChipBg, host => BuildMiniLogoGrid(host), isHomeButton: true);
+            AddNavButton(sidebar, DashView.Camaras, "Cámaras", UITheme.NearWhiteMarker, host => IconFactory.Camera(host, UITheme.BgBase, UITheme.TextMuted2));
+            AddNavButton(sidebar, DashView.Combustible, "Combustible", UITheme.GoldAccent, host => IconFactory.FuelDrop(host, UITheme.BgBase));
+            AddNavButton(sidebar, DashView.Cultivo, "Cultivo", UITheme.BrownAccent, host => IconFactory.CultivoDot(host, UITheme.BgBase));
+            AddNavButton(sidebar, DashView.Tractores, "Tractores", UITheme.GreenPrimary, host => IconFactory.Tractor(host, UITheme.BgBase, UITheme.GreenPrimary));
+            AddNavButton(sidebar, DashView.Cosechadoras, "Cosechadoras", UITheme.GreenDark, host => IconFactory.Harvester(host, UITheme.BgBase, UITheme.GreenDark));
         }
 
-        private void AddNavButton(Transform parent, DashView view, string label, System.Action<Transform> drawIcon, bool isHomeButton = false)
+        private void AddNavButton(Transform parent, DashView view, string label, Color iconBg, System.Action<Transform> drawIcon, bool isHomeButton = false)
         {
             var btnRoot = UIBuilder.VCol(parent, $"Nav_{view}", gap: 6, padding: new RectOffset(4, 4, 12, 12), align: TextAnchor.UpperCenter, controlWidth: true, controlHeight: true);
             // Width must be explicit (not -1/"inherit"), or Unity's nested-LayoutGroup
@@ -181,7 +184,7 @@ namespace FarmDashboard
             hover.NormalColor = Color.clear;
             hover.HoverColor = UITheme.ChipBg;
 
-            var iconHost = UIBuilder.Panel(btnRoot, "IconHost", UITheme.ChipBg, 5f, exactWidth: 28, exactHeight: 28); // squarer than the default chip radius -- reads as a rounded square, not a circle, at 28x28
+            var iconHost = UIBuilder.Panel(btnRoot, "IconHost", iconBg, 5f, exactWidth: 28, exactHeight: 28); // squarer than the default chip radius -- reads as a rounded square, not a circle, at 28x28
             UIBuilder.Flex(iconHost, 0, 0, 28, 28, 28, 28);
             drawIcon(iconHost);
 
