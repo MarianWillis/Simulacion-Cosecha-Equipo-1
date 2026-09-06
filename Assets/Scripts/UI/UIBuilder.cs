@@ -12,6 +12,7 @@ namespace FarmDashboard
     public static class UIBuilder
     {
         private static readonly Dictionary<int, Sprite> RoundedSpriteCache = new();
+        private static readonly Dictionary<(int w, int h, int r), Sprite> ExactRoundedSpriteCache = new();
         private static readonly Dictionary<string, TMP_FontAsset> FontCache = new();
 
         public static TMP_FontAsset Font(string resourcesPath)
@@ -121,6 +122,64 @@ namespace FarmDashboard
             return _softGlowSprite;
         }
 
+        // Same rounded-corner math as RoundedSprite, but baked at the EXACT final
+        // pixel size and rendered as Image.Type.Simple (no 9-slice stretching).
+        // Use this whenever the caller already knows the panel's fixed on-screen
+        // size (which is true almost everywhere in this codebase, since a Panel()
+        // call is always immediately followed by an explicit-size Flex() call) --
+        // Image.Type.Sliced on a runtime-generated Sprite was not respecting the
+        // border here, so small/tightly-cropped masks (e.g. a 120px box with a
+        // 22px radius) rendered as if the whole tiny source texture had been
+        // stretched over the box, which -- since so much of that texture is
+        // corner-falloff -- looked like a circle instead of a rounded square.
+        public static Sprite RoundedSpriteExact(int width, int height, int radius)
+        {
+            width = Mathf.Max(width, 1);
+            height = Mathf.Max(height, 1);
+            radius = Mathf.Clamp(radius, 0, Mathf.Min(width, height) / 2);
+            var key = (width, height, radius);
+            if (ExactRoundedSpriteCache.TryGetValue(key, out var cached)) return cached;
+
+            var tex = new Texture2D(width, height, TextureFormat.RGBA32, false)
+            {
+                filterMode = FilterMode.Bilinear,
+                wrapMode = TextureWrapMode.Clamp,
+                name = $"RoundedExact_{width}x{height}_{radius}",
+            };
+            var pixels = new Color32[width * height];
+            float r = radius;
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    float px = x + 0.5f;
+                    float py = y + 0.5f;
+                    bool xOutside = px < r || px > width - r;
+                    bool yOutside = py < r || py > height - r;
+                    float alpha;
+                    if (xOutside && yOutside)
+                    {
+                        float cx = px < r ? r : width - r;
+                        float cy = py < r ? r : height - r;
+                        float dist = Vector2.Distance(new Vector2(px, py), new Vector2(cx, cy));
+                        alpha = Mathf.Clamp01(r - dist + 0.5f);
+                    }
+                    else
+                    {
+                        alpha = 1f;
+                    }
+                    pixels[y * width + x] = new Color32(255, 255, 255, (byte)(alpha * 255));
+                }
+            }
+            tex.SetPixels32(pixels);
+            tex.Apply();
+
+            var sprite = Sprite.Create(tex, new Rect(0, 0, width, height), new Vector2(0.5f, 0.5f), 1f);
+            sprite.name = $"RoundedExactSprite_{width}x{height}_{radius}";
+            ExactRoundedSpriteCache[key] = sprite;
+            return sprite;
+        }
+
         public static RectTransform NewRect(Transform parent, string name)
         {
             var go = new GameObject(name, typeof(RectTransform));
@@ -130,17 +189,35 @@ namespace FarmDashboard
         }
 
         // A rounded panel, optionally with a 1px (or given width) border drawn as
-        // a second, slightly-larger rounded rect behind the fill -- the standard
-        // trick for a crisp inset border with 9-sliced rounded corners.
-        public static RectTransform Panel(Transform parent, string name, Color bg, float radius, Color? borderColor = null, float borderWidth = 1f)
+        // a second, slightly-larger rounded rect behind the fill.
+        //
+        // Pass exactWidth/exactHeight whenever the final on-screen size is already
+        // known (true almost everywhere -- a Panel() call is nearly always
+        // immediately followed by an explicit-size Flex() call): this bakes the
+        // rounded-corner mask at that exact pixel size (Image.Type.Simple), which
+        // is what actually renders correct crisp corners. Leave them null only for
+        // panels whose size isn't known yet (e.g. a pill that self-sizes via
+        // ContentSizeFitter) -- those fall back to the 9-sliced RoundedSprite,
+        // which is the technique that's supposed to handle a variable size, though
+        // corner fidelity there hasn't been verified as carefully.
+        public static RectTransform Panel(Transform parent, string name, Color bg, float radius,
+            int? exactWidth = null, int? exactHeight = null, Color? borderColor = null, float borderWidth = 1f)
         {
             RectTransform host;
             if (borderColor.HasValue)
             {
                 host = NewRect(parent, name);
                 var borderImg = host.gameObject.AddComponent<Image>();
-                borderImg.sprite = RoundedSprite(Mathf.RoundToInt(radius));
-                borderImg.type = Image.Type.Sliced;
+                if (exactWidth.HasValue && exactHeight.HasValue)
+                {
+                    borderImg.sprite = RoundedSpriteExact(exactWidth.Value, exactHeight.Value, Mathf.RoundToInt(radius));
+                    borderImg.type = Image.Type.Simple;
+                }
+                else
+                {
+                    borderImg.sprite = RoundedSprite(Mathf.RoundToInt(radius));
+                    borderImg.type = Image.Type.Sliced;
+                }
                 borderImg.color = borderColor.Value;
 
                 var inner = NewRect(host, name + "_Fill");
@@ -149,16 +226,33 @@ namespace FarmDashboard
                 inner.offsetMin = new Vector2(borderWidth, borderWidth);
                 inner.offsetMax = new Vector2(-borderWidth, -borderWidth);
                 var innerImg = inner.gameObject.AddComponent<Image>();
-                innerImg.sprite = RoundedSprite(Mathf.RoundToInt(Mathf.Max(radius - borderWidth, 1)));
-                innerImg.type = Image.Type.Sliced;
+                int innerRadius = Mathf.RoundToInt(Mathf.Max(radius - borderWidth, 1));
+                if (exactWidth.HasValue && exactHeight.HasValue)
+                {
+                    innerImg.sprite = RoundedSpriteExact(Mathf.RoundToInt(exactWidth.Value - borderWidth * 2), Mathf.RoundToInt(exactHeight.Value - borderWidth * 2), innerRadius);
+                    innerImg.type = Image.Type.Simple;
+                }
+                else
+                {
+                    innerImg.sprite = RoundedSprite(innerRadius);
+                    innerImg.type = Image.Type.Sliced;
+                }
                 innerImg.color = bg;
             }
             else
             {
                 host = NewRect(parent, name);
                 var img = host.gameObject.AddComponent<Image>();
-                img.sprite = RoundedSprite(Mathf.RoundToInt(radius));
-                img.type = Image.Type.Sliced;
+                if (exactWidth.HasValue && exactHeight.HasValue)
+                {
+                    img.sprite = RoundedSpriteExact(exactWidth.Value, exactHeight.Value, Mathf.RoundToInt(radius));
+                    img.type = Image.Type.Simple;
+                }
+                else
+                {
+                    img.sprite = RoundedSprite(Mathf.RoundToInt(radius));
+                    img.type = Image.Type.Sliced;
+                }
                 img.color = bg;
             }
             return host;

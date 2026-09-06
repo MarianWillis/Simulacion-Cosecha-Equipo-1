@@ -71,7 +71,7 @@ namespace FarmDashboard
             // Left: logo tile + wordmark.
             var left = UIBuilder.HRow(row, "HeaderLeft", gap: 10, controlWidth: true, controlHeight: true, align: TextAnchor.MiddleLeft);
             UIBuilder.Flex(left, 0, 1, 260, -1, 260, -1);
-            var logoTile = UIBuilder.Panel(left, "LogoTile", UITheme.ChipBg, 7);
+            var logoTile = UIBuilder.Panel(left, "LogoTile", UITheme.ChipBg, 7, exactWidth: 28, exactHeight: 28);
             UIBuilder.Flex(logoTile, 0, 0, 28, 28, 28, 28);
             BuildMiniLogoGrid(logoTile);
 
@@ -113,7 +113,10 @@ namespace FarmDashboard
 
         private RectTransform BuildPill(Transform parent, string name, out RectTransform leadingSlot, out TextMeshProUGUI text)
         {
-            var pill = UIBuilder.Panel(parent, name, UITheme.ChipBg, UITheme.RadiusChip);
+            // No exactWidth here (width is dynamic via ContentSizeFitter below), so
+            // this still uses the 9-sliced RoundedSprite path -- a small radius
+            // keeps any corner imperfection from that path barely noticeable.
+            var pill = UIBuilder.Panel(parent, name, UITheme.ChipBg, 4f);
             UIBuilder.Flex(pill, 0, 0, -1, 24, -1, 24);
             var fitter = pill.gameObject.AddComponent<ContentSizeFitter>();
             fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
@@ -167,8 +170,8 @@ namespace FarmDashboard
             // that's what was rendering this button ~5x too wide (294px measured).
             UIBuilder.Flex(btnRoot, 0, 0, 64, 60, 64, 60);
             var bg = btnRoot.gameObject.AddComponent<Image>();
-            bg.sprite = UIBuilder.RoundedSprite(Mathf.RoundToInt(UITheme.RadiusNested));
-            bg.type = Image.Type.Sliced;
+            bg.sprite = UIBuilder.RoundedSpriteExact(64, 60, Mathf.RoundToInt(UITheme.RadiusNested));
+            bg.type = Image.Type.Simple;
             bg.color = Color.clear;
             var button = btnRoot.gameObject.AddComponent<Button>();
             button.targetGraphic = bg;
@@ -178,7 +181,7 @@ namespace FarmDashboard
             hover.NormalColor = Color.clear;
             hover.HoverColor = UITheme.ChipBg;
 
-            var iconHost = UIBuilder.Panel(btnRoot, "IconHost", UITheme.ChipBg, 5f); // squarer than the default chip radius -- reads as a rounded square, not a circle, at 28x28
+            var iconHost = UIBuilder.Panel(btnRoot, "IconHost", UITheme.ChipBg, 5f, exactWidth: 28, exactHeight: 28); // squarer than the default chip radius -- reads as a rounded square, not a circle, at 28x28
             UIBuilder.Flex(iconHost, 0, 0, 28, 28, 28, 28);
             drawIcon(iconHost);
 

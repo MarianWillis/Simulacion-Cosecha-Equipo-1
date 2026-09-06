@@ -82,7 +82,7 @@ namespace FarmDashboard
             shadow.sizeDelta = new Vector2(200, 200);
             shadow.anchoredPosition = new Vector2(0, -10);
 
-            var tile = UIBuilder.Panel(logoHost, "LogoTile", UITheme.ChipBg, 22);
+            var tile = UIBuilder.Panel(logoHost, "LogoTile", UITheme.ChipBg, 22, exactWidth: 120, exactHeight: 120);
             tile.anchorMin = Vector2.zero;
             tile.anchorMax = Vector2.one;
             tile.offsetMin = Vector2.zero;
@@ -96,13 +96,16 @@ namespace FarmDashboard
 
             var topRow = UIBuilder.HRow(grid, "TopRow", gap: 5, controlWidth: true, controlHeight: true, forceExpand: true);
             UIBuilder.Flex(topRow, 1, 1);
-            var tl = UIBuilder.Panel(topRow, "TL", UITheme.GreenPrimary, 7); UIBuilder.Flex(tl, 1, 1);
-            var tr = UIBuilder.Panel(topRow, "TR", UITheme.GoldAccent, 7); UIBuilder.Flex(tr, 1, 1);
+            // Cell size: tile is 120x120, minus 8px padding each side (104x104
+            // inner), minus the 5px gap between the two columns/rows, split in two.
+            const int cellSize = 50;
+            var tl = UIBuilder.Panel(topRow, "TL", UITheme.GreenPrimary, 7, exactWidth: cellSize, exactHeight: cellSize); UIBuilder.Flex(tl, 1, 1);
+            var tr = UIBuilder.Panel(topRow, "TR", UITheme.GoldAccent, 7, exactWidth: cellSize, exactHeight: cellSize); UIBuilder.Flex(tr, 1, 1);
 
             var bottomRow = UIBuilder.HRow(grid, "BottomRow", gap: 5, controlWidth: true, controlHeight: true, forceExpand: true);
             UIBuilder.Flex(bottomRow, 1, 1);
-            var bl = UIBuilder.Panel(bottomRow, "BL", UITheme.GreenDark, 7); UIBuilder.Flex(bl, 1, 1);
-            var br = UIBuilder.Panel(bottomRow, "BR", UITheme.BrownAccent, 7); UIBuilder.Flex(br, 1, 1);
+            var bl = UIBuilder.Panel(bottomRow, "BL", UITheme.GreenDark, 7, exactWidth: cellSize, exactHeight: cellSize); UIBuilder.Flex(bl, 1, 1);
+            var br = UIBuilder.Panel(bottomRow, "BR", UITheme.BrownAccent, 7, exactWidth: cellSize, exactHeight: cellSize); UIBuilder.Flex(br, 1, 1);
 
             StartCoroutine(UITween.ScaleFadeIn((RectTransform)logoHost, logoGroup, 0.25f, 0.9f));
         }
