@@ -41,7 +41,7 @@ namespace FarmDashboard
             UIBuilder.Flex(ContentArea, 1, 1);
 
             _placeholderText = UIBuilder.Text(ContentArea, "Placeholder", ViewLabel(_state.View),
-                UITheme.TypeDisplay38, UIBuilder.Font(UITheme.FontPathDisplay), UITheme.TextMuted1, TextAlignmentOptions.MidlineLeft);
+                UITheme.TypeDisplay38, UIBuilder.Font(UITheme.FontPathDisplay), UITheme.TextMuted1, TextAlignmentOptions.TopLeft);
 
             _state.Changed += RefreshAll;
             RefreshAll();
@@ -161,7 +161,11 @@ namespace FarmDashboard
         private void AddNavButton(Transform parent, DashView view, string label, System.Action<Transform> drawIcon, bool isHomeButton = false)
         {
             var btnRoot = UIBuilder.VCol(parent, $"Nav_{view}", gap: 6, padding: new RectOffset(4, 4, 12, 12), align: TextAnchor.UpperCenter, controlWidth: true, controlHeight: true);
-            UIBuilder.Flex(btnRoot, 0, 0, -1, 60, -1, 60);
+            // Width must be explicit (not -1/"inherit"), or Unity's nested-LayoutGroup
+            // cross-axis sizing can report btnRoot's own VerticalLayoutGroup preferred
+            // width upward instead of clamping to the sidebar's actual 72px column --
+            // that's what was rendering this button ~5x too wide (294px measured).
+            UIBuilder.Flex(btnRoot, 0, 0, 64, 60, 64, 60);
             var bg = btnRoot.gameObject.AddComponent<Image>();
             bg.sprite = UIBuilder.RoundedSprite(Mathf.RoundToInt(UITheme.RadiusNested));
             bg.type = Image.Type.Sliced;
