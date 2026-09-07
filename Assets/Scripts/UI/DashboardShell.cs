@@ -293,7 +293,7 @@ namespace FarmDashboard
         {
             _tickText.text = $"Tick {_state.Tick:D4} / {_state.Config.Pasos}";
             _statusLabel.text = _state.Running ? "En vivo" : "Pausado";
-            var statusColor = _state.Running ? UITheme.GreenPrimary : UITheme.GoldBright;
+            var statusColor = _state.Running ? UITheme.GreenPrimary : UITheme.MidGray;
             _statusDot.color = statusColor;
             _statusLabel.color = statusColor;
 
