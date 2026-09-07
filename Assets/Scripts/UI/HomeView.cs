@@ -62,7 +62,12 @@ namespace FarmDashboard
 
         private void BuildCameraCard(Transform parent)
         {
-            var card = UIBuilder.Panel(parent, "VistaGeneralCard", UITheme.PanelBg, UITheme.RadiusCard, borderColor: UITheme.PanelBorder);
+            // exactWidth/Height here are just a reference bake -- the card's real
+            // size is flexible (flex:2) and varies with window size, but the
+            // 9-sliced fallback (no exact size) doesn't render correctly at
+            // runtime at all (see the header-pill and sidebar-icon fixes), so an
+            // approximate exact size, even if not pixel-perfect, is required.
+            var card = UIBuilder.Panel(parent, "VistaGeneralCard", UITheme.PanelBg, UITheme.RadiusCard, exactWidth: 700, exactHeight: 520, borderColor: UITheme.PanelBorder);
             UIBuilder.Flex(card, 2, 1, 280, -1);
 
             var col = UIBuilder.VCol(card, "Col", gap: 10, padding: new RectOffset(16, 16, 16, 16), controlWidth: true, controlHeight: true, forceExpand: true);
@@ -83,7 +88,7 @@ namespace FarmDashboard
             accent.sizeDelta = new Vector2(36, 4);
             accent.anchoredPosition = new Vector2(0, -4);
 
-            _gridCanvas = UIBuilder.Panel(col, "GridCanvas", UITheme.GridFieldBg, UITheme.RadiusNested);
+            _gridCanvas = UIBuilder.Panel(col, "GridCanvas", UITheme.GridFieldBg, UITheme.RadiusNested, exactWidth: 660, exactHeight: 420);
             UIBuilder.Flex(_gridCanvas, 1, 1, -1, 320);
 
             _markersLayer = UIBuilder.NewRect(_gridCanvas, "Markers");
@@ -126,7 +131,7 @@ namespace FarmDashboard
 
         private void BuildConfigCard(Transform parent)
         {
-            var card = UIBuilder.Panel(parent, "ConfigCard", UITheme.PanelBg, UITheme.RadiusCard, borderColor: UITheme.PanelBorder);
+            var card = UIBuilder.Panel(parent, "ConfigCard", UITheme.PanelBg, UITheme.RadiusCard, exactWidth: 300, exactHeight: 450, borderColor: UITheme.PanelBorder);
             var col = UIBuilder.VCol(card, "Col", gap: 10, padding: new RectOffset(16, 16, 16, 16), controlWidth: true, controlHeight: true, forceExpand: true);
             col.anchorMin = Vector2.zero; col.anchorMax = Vector2.one; col.offsetMin = Vector2.zero; col.offsetMax = Vector2.zero;
             // card has no LayoutGroup of its own, so its reported height (when
@@ -147,21 +152,21 @@ namespace FarmDashboard
             var divider = UIBuilder.Rect(col, "Divider", UITheme.DividerTrackBg);
             UIBuilder.Flex(divider, 1, 0, -1, 1, -1, 1);
 
-            _resumeButton = UIBuilder.Button(col, "ResumeBtn", UITheme.GreenPrimary, UITheme.GreenPrimary, UITheme.RadiusButton);
+            _resumeButton = UIBuilder.Button(col, "ResumeBtn", UITheme.GreenPrimary, UITheme.GreenPrimary, UITheme.RadiusButton, exactWidth: 268, exactHeight: 34);
             UIBuilder.Flex((RectTransform)_resumeButton.transform, 1, 0, -1, 34, -1, 34);
             _resumeBg = _resumeButton.GetComponent<Image>();
             _resumeLabel = UIBuilder.Text(_resumeButton.transform, "Label", "RESUME", UITheme.TypeStatusButton11, UIBuilder.Font(UITheme.FontPathBodyExtraBold), UITheme.OnGreenText, TextAlignmentOptions.Center);
             StretchFill((RectTransform)_resumeLabel.transform);
             _resumeButton.onClick.AddListener(() => _bootstrap.StartRun());
 
-            _pauseButton = UIBuilder.Button(col, "PauseBtn", UITheme.DividerTrackBg, UITheme.DividerTrackBg, UITheme.RadiusButton);
+            _pauseButton = UIBuilder.Button(col, "PauseBtn", UITheme.DividerTrackBg, UITheme.DividerTrackBg, UITheme.RadiusButton, exactWidth: 268, exactHeight: 34);
             UIBuilder.Flex((RectTransform)_pauseButton.transform, 1, 0, -1, 34, -1, 34);
             _pauseBg = _pauseButton.GetComponent<Image>();
             _pauseLabel = UIBuilder.Text(_pauseButton.transform, "Label", "PAUSE", UITheme.TypeStatusButton11, UIBuilder.Font(UITheme.FontPathBodyExtraBold), UITheme.MidGray, TextAlignmentOptions.Center);
             StretchFill((RectTransform)_pauseLabel.transform);
             _pauseButton.onClick.AddListener(() => _bootstrap.PauseRun());
 
-            var restartButton = UIBuilder.Button(col, "RestartBtn", Color.clear, UITheme.ChipBg, UITheme.RadiusButton);
+            var restartButton = UIBuilder.Button(col, "RestartBtn", Color.clear, UITheme.ChipBg, UITheme.RadiusButton, exactWidth: 268, exactHeight: 34);
             UIBuilder.Flex((RectTransform)restartButton.transform, 1, 0, -1, 34, -1, 34);
             var restartLabel = UIBuilder.Text(restartButton.transform, "Label", "RESTART", UITheme.TypeStatusButton11, UIBuilder.Font(UITheme.FontPathBodyExtraBold), UITheme.ButtonOutlineText, TextAlignmentOptions.Center);
             StretchFill((RectTransform)restartLabel.transform);
@@ -170,7 +175,7 @@ namespace FarmDashboard
 
         private void BuildFleetCard(Transform parent)
         {
-            var card = UIBuilder.Panel(parent, "FleetCard", UITheme.PanelBg, UITheme.RadiusCard, borderColor: UITheme.PanelBorder);
+            var card = UIBuilder.Panel(parent, "FleetCard", UITheme.PanelBg, UITheme.RadiusCard, exactWidth: 300, exactHeight: 300, borderColor: UITheme.PanelBorder);
             UIBuilder.Flex(card, 0, 1, -1, 220);
             var col = UIBuilder.VCol(card, "Col", gap: 12, padding: new RectOffset(16, 16, 16, 16), controlWidth: true, controlHeight: true, forceExpand: true);
             col.anchorMin = Vector2.zero; col.anchorMax = Vector2.one; col.offsetMin = Vector2.zero; col.offsetMax = Vector2.zero;
@@ -302,7 +307,7 @@ namespace FarmDashboard
 
         private (Image dot, TextMeshProUGUI status, UIBuilder.ProgressBarHandle fuel, TextMeshProUGUI fuelPct, TextMeshProUGUI rounds) BuildFleetRow(string id, string label)
         {
-            var row = UIBuilder.Panel(_fleetList, $"Row_{id}", UITheme.CardBgNested, UITheme.RadiusRow);
+            var row = UIBuilder.Panel(_fleetList, $"Row_{id}", UITheme.CardBgNested, UITheme.RadiusRow, exactWidth: 280, exactHeight: 84);
             UIBuilder.Flex(row, 1, 0, -1, 84, -1, 84);
             var col = UIBuilder.VCol(row, "Col", gap: 8, padding: new RectOffset(12, 12, 12, 12), controlWidth: true, controlHeight: true, forceExpand: true);
             col.anchorMin = Vector2.zero; col.anchorMax = Vector2.one; col.offsetMin = Vector2.zero; col.offsetMax = Vector2.zero;
@@ -326,7 +331,7 @@ namespace FarmDashboard
 
             // ProgressBar() already adds its own LayoutElement (flex width 1, fixed
             // height) to the track -- no need to Flex() it again here.
-            var fuelBar = UIBuilder.ProgressBar(col, "FuelBar", 6, 3, UITheme.DividerTrackBg, UITheme.GreenPrimary);
+            var fuelBar = UIBuilder.ProgressBar(col, "FuelBar", 6, 3, UITheme.DividerTrackBg, UITheme.GreenPrimary, exactWidth: 250);
 
             var roundsRow = UIBuilder.HRow(col, "RoundsRow", controlWidth: true, controlHeight: true);
             UIBuilder.Flex(roundsRow, 1, 0, -1, 16, -1, 16);

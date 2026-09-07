@@ -350,27 +350,31 @@ namespace FarmDashboard
             }
         }
 
-        public static ProgressBarHandle ProgressBar(Transform parent, string name, float height, float radius, Color trackColor, Color fillColor)
+        public static ProgressBarHandle ProgressBar(Transform parent, string name, float height, float radius, Color trackColor, Color fillColor, int exactWidth = 260)
         {
-            var track = Panel(parent, name, trackColor, radius);
+            var track = Panel(parent, name, trackColor, radius, exactWidth: exactWidth, exactHeight: Mathf.RoundToInt(height));
             Flex(track, 1, 0, -1, height, -1, height);
 
-            var fill = NewRect(track, name + "_Fill");
+            // Flat rect, not rounded: the fill's right edge moves every frame as
+            // the percentage changes, so there's no fixed size to bake a mask at.
+            // The track's own rounded shape reads as the bar's silhouette.
+            var fill = Rect(track, name + "_Fill", fillColor);
             fill.anchorMin = Vector2.zero;
             fill.anchorMax = new Vector2(1f, 1f);
             fill.offsetMin = Vector2.zero;
             fill.offsetMax = Vector2.zero;
-            var fillImg = fill.gameObject.AddComponent<Image>();
-            fillImg.sprite = RoundedSprite(Mathf.RoundToInt(radius));
-            fillImg.type = Image.Type.Sliced;
-            fillImg.color = fillColor;
+            var fillImg = fill.GetComponent<Image>();
 
             return new ProgressBarHandle { Fill = fill, FillImage = fillImg };
         }
 
-        public static Button Button(Transform parent, string name, Color normalBg, Color hoverBg, float radius = 0)
+        public static Button Button(Transform parent, string name, Color normalBg, Color hoverBg, float radius = 0, int exactWidth = 0, int exactHeight = 0)
         {
-            RectTransform rt = radius > 0 ? Panel(parent, name, normalBg, radius) : Rect(parent, name, normalBg);
+            RectTransform rt = radius > 0
+                ? (exactWidth > 0 && exactHeight > 0
+                    ? Panel(parent, name, normalBg, radius, exactWidth: exactWidth, exactHeight: exactHeight)
+                    : Panel(parent, name, normalBg, radius))
+                : Rect(parent, name, normalBg);
             var img = rt.GetComponent<Image>();
             var btn = rt.gameObject.AddComponent<Button>();
             btn.targetGraphic = img;

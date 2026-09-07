@@ -115,35 +115,32 @@ namespace FarmDashboard
             var right = UIBuilder.HRow(row, "HeaderRight", gap: 14, controlWidth: false, controlHeight: true, align: TextAnchor.MiddleRight);
             UIBuilder.Flex(right, 1, 1);
 
-            BuildPill(right, "TurnoPill", out _, out var turnoText);
+            BuildPill(right, "TurnoPill", 140, out _, out var turnoText);
             turnoText.text = "Turno: Diurno";
             turnoText.font = UIBuilder.Font(UITheme.FontPathMonoRegular);
 
-            var statusPill = BuildPill(right, "StatusPill", out var statusDotHost, out _statusLabel);
+            var statusPill = BuildPill(right, "StatusPill", 120, out var statusDotHost, out _statusLabel);
             _statusLabel.font = UIBuilder.Font(UITheme.FontPathMonoRegular);
             _statusDot = statusDotHost.gameObject.AddComponent<Image>();
-            _statusDot.sprite = UIBuilder.RoundedSprite(4);
-            _statusDot.type = Image.Type.Sliced;
+            _statusDot.sprite = UIBuilder.RoundedSpriteExact(7, 7, 4);
+            _statusDot.type = Image.Type.Simple;
             UIBuilder.Flex(statusDotHost, 0, 0, 7, 7, 7, 7);
 
-            BuildPill(right, "TickPill", out _, out _tickText);
+            BuildPill(right, "TickPill", 160, out _, out _tickText);
             _tickText.font = UIBuilder.Font(UITheme.FontPathMonoRegular);
         }
 
-        private RectTransform BuildPill(Transform parent, string name, out RectTransform leadingSlot, out TextMeshProUGUI text)
+        private RectTransform BuildPill(Transform parent, string name, int width, out RectTransform leadingSlot, out TextMeshProUGUI text)
         {
-            // The 9-sliced RoundedSprite path turned out not to render correctly
-            // at runtime (see the logo/sidebar-icon fix) -- it was stretching this
-            // pill into a huge translucent bar across most of the header. Bake the
-            // mask at a generous reference width instead (Image.Type.Simple): the
-            // actual pill is narrower than this, so corners get very slightly
-            // squished horizontally, but that's imperceptible at a 4px radius.
-            var pill = UIBuilder.Panel(parent, name, UITheme.ChipBg, 4f, exactWidth: 220, exactHeight: 24);
-            UIBuilder.Flex(pill, 0, 0, -1, 24, -1, 24);
-            var fitter = pill.gameObject.AddComponent<ContentSizeFitter>();
-            fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+            // ContentSizeFitter + an anchor-stretched child turned out to size this
+            // wildly wrong at runtime (a pill rendered ~900px wide, pushing the
+            // other header pills off-screen) -- an explicit width sidesteps
+            // whatever that interaction was. Each caller passes a width generous
+            // enough for its own text.
+            var pill = UIBuilder.Panel(parent, name, UITheme.ChipBg, 4f, exactWidth: width, exactHeight: 24);
+            UIBuilder.Flex(pill, 0, 0, width, 24, width, 24);
 
-            var inner = UIBuilder.HRow(pill, name + "_Row", gap: 6, padding: new RectOffset(10, 10, 0, 0), controlWidth: true, controlHeight: true, align: TextAnchor.MiddleLeft);
+            var inner = UIBuilder.HRow(pill, name + "_Row", gap: 6, padding: new RectOffset(10, 10, 0, 0), controlWidth: true, controlHeight: true, forceExpand: true, align: TextAnchor.MiddleLeft);
             inner.anchorMin = Vector2.zero;
             inner.anchorMax = Vector2.one;
             inner.offsetMin = Vector2.zero;
@@ -153,8 +150,7 @@ namespace FarmDashboard
             UIBuilder.Flex(leadingSlot, 0, 0, 0, 0, 0, 0);
 
             text = UIBuilder.Text(inner, name + "_Text", "", UITheme.TypeBody12, UIBuilder.Font(UITheme.FontPathMonoRegular), UITheme.HeaderMonoText, TextAlignmentOptions.MidlineLeft);
-            // No flexibleWidth override here on purpose -- TMP's own ILayoutElement
-            // preferred size drives the pill's ContentSizeFitter, so it hugs the text.
+            UIBuilder.Flex((RectTransform)text.transform, 1, 1);
             return pill;
         }
 
