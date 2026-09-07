@@ -17,6 +17,13 @@ namespace FarmDashboard
         private DashboardState _state;
         private ConexionSimulacion _conexion;
 
+        // Once the user clicks Pause, ignore OnPaso's "Running=true" until they
+        // click Resume again -- otherwise a step already in flight when Pause
+        // was sent (the server takes a moment to actually stop) would flip the
+        // header pill straight back to "En vivo" a frame later, making Pause
+        // look like it didn't do anything.
+        private bool _userPaused;
+
         public bool IsConnected => _conexion != null;
 
         public void Init(DashboardState state)
@@ -81,9 +88,10 @@ namespace FarmDashboard
             // A "paso" arriving at all is the strongest signal the sim is
             // actively advancing (there's no explicit paused/running field in
             // the protocol) -- keeps the header's En vivo/Pausado pill honest
-            // even before anyone touches Resume/Pause, and if it flips back to
-            // true after a Pause, that reflects the server actually resuming.
-            _state.Running = true;
+            // even before anyone touches Resume/Pause. Suppressed while
+            // _userPaused, so a step already in flight when Pause was clicked
+            // doesn't immediately flip the pill back to "En vivo".
+            if (!_userPaused) _state.Running = true;
             _state.Tick = paso.t;
 
             foreach (var a in paso.agentes)
@@ -125,8 +133,17 @@ namespace FarmDashboard
             return VehicleStatus.Activo;
         }
 
-        public void Pause() => _conexion?.EnviarPausar();
-        public void Resume() => _conexion?.EnviarReanudar();
+        public void Pause()
+        {
+            _userPaused = true;
+            _conexion?.EnviarPausar();
+        }
+
+        public void Resume()
+        {
+            _userPaused = false;
+            _conexion?.EnviarReanudar();
+        }
 
         public void Restart(SimConfig cfg)
         {
