@@ -190,6 +190,13 @@ namespace FarmDashboard
             UIBuilder.Flex(card, 0, 0, -1, 300, -1, 300);
             var col = UIBuilder.VCol(card, "Col", gap: 12, padding: new RectOffset(16, 16, 16, 16), controlWidth: true, controlHeight: true, forceExpand: true);
             col.anchorMin = Vector2.zero; col.anchorMax = Vector2.one; col.offsetMin = Vector2.zero; col.offsetMax = Vector2.zero;
+            // forceExpand:true stretches ALL children on BOTH axes regardless of
+            // their own flexible weight (see StatusDot-style bug elsewhere) -- that
+            // was pushing the fixed-height "Flota" title to fill leftover vertical
+            // space too, centering it and shoving the scroll list past the card's
+            // fixed 300px, clipping it. Height should only force-expand the
+            // scrollHost (which asks for it via Flex's flexible height).
+            col.GetComponent<VerticalLayoutGroup>().childForceExpandHeight = false;
 
             var title = UIBuilder.Text(col, "Title", "Flota", UITheme.TypeSectionTitle14, UIBuilder.Font(UITheme.FontPathBodyBold), UITheme.TextPrimary, TextAlignmentOptions.MidlineLeft);
             UIBuilder.Flex((RectTransform)title.transform, 1, 0, -1, 18, -1, 18);

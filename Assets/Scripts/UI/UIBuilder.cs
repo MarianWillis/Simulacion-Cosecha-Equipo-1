@@ -338,8 +338,13 @@ namespace FarmDashboard
         {
             var rt = NewRect(parent, name);
             var img = rt.gameObject.AddComponent<Image>();
-            img.sprite = RoundedSprite(Mathf.CeilToInt(diameter / 2f));
-            img.type = Image.Type.Sliced;
+            int d = Mathf.RoundToInt(diameter);
+            // Image.Type.Sliced on a tiny runtime sprite stretches instead of
+            // slicing (see RoundedSpriteExact usages elsewhere) -- baked this at
+            // its exact final size with Simple instead, otherwise it renders as
+            // a squashed oval whenever the row's layout group isn't perfectly square.
+            img.sprite = RoundedSpriteExact(d, d, d / 2);
+            img.type = Image.Type.Simple;
             img.color = color;
             Flex(rt, 0, 0, diameter, diameter, diameter, diameter);
             return rt;
