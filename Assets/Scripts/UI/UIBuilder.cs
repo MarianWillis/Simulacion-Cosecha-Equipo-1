@@ -435,11 +435,23 @@ namespace FarmDashboard
             var fieldHost = Panel(host, name + "_Field", UITheme.ChipBg, 6f, exactWidth: 260, exactHeight: 32, borderColor: UITheme.DividerTrackBg, borderWidth: 1f);
             Flex(fieldHost, 1, 0, -1, 32, -1, 32);
 
-            var textGo = NewRect(fieldHost, "Text");
+            // TMP_InputField generates its caret as a child under textViewport at
+            // runtime -- pointing textViewport at the SAME rect as the text
+            // component itself (self-referential) was likely why the caret never
+            // showed. Standard TMP hierarchy: a "TextArea" container (this is the
+            // viewport) holding "Text" as its child.
+            var textArea = NewRect(fieldHost, "TextArea");
+            textArea.anchorMin = Vector2.zero;
+            textArea.anchorMax = Vector2.one;
+            textArea.offsetMin = new Vector2(9, 4);
+            textArea.offsetMax = new Vector2(-9, -4);
+            textArea.gameObject.AddComponent<RectMask2D>();
+
+            var textGo = NewRect(textArea, "Text");
             textGo.anchorMin = Vector2.zero;
             textGo.anchorMax = Vector2.one;
-            textGo.offsetMin = new Vector2(9, 4);
-            textGo.offsetMax = new Vector2(-9, -4);
+            textGo.offsetMin = Vector2.zero;
+            textGo.offsetMax = Vector2.zero;
             var tmpText = textGo.gameObject.AddComponent<TextMeshProUGUI>();
             tmpText.font = Font(UITheme.FontPathBodyRegular);
             tmpText.fontSize = UITheme.TypeBody12;
@@ -450,7 +462,7 @@ namespace FarmDashboard
             var field = fieldHost.gameObject.AddComponent<TMP_InputField>();
             field.targetGraphic = fieldImg;
             field.textComponent = tmpText;
-            field.textViewport = (RectTransform)textGo;
+            field.textViewport = textArea;
             field.contentType = contentType;
             field.text = initialText;
             field.transition = Selectable.Transition.None;
