@@ -238,6 +238,14 @@ namespace FarmDashboard
                     innerImg.type = Image.Type.Sliced;
                 }
                 innerImg.color = bg;
+                // The fill sits ON TOP of (renders after) the border/host in the
+                // hierarchy, so it was the one catching every raycast -- clicks
+                // never reached components added to `host` itself (e.g. a
+                // TMP_InputField or Button using host as targetGraphic), which is
+                // exactly why the Configuración number fields could be seen but
+                // not clicked into. Not a raycast target itself; host stays the
+                // one thing pointer events land on.
+                innerImg.raycastTarget = false;
             }
             else
             {
@@ -442,6 +450,7 @@ namespace FarmDashboard
             var field = fieldHost.gameObject.AddComponent<TMP_InputField>();
             field.targetGraphic = fieldImg;
             field.textComponent = tmpText;
+            field.textViewport = (RectTransform)textGo;
             field.contentType = contentType;
             field.text = initialText;
             field.transition = Selectable.Transition.None;
