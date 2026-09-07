@@ -153,7 +153,7 @@ namespace FarmDashboard
             turnoText.text = "Turno: Diurno";
             turnoText.font = UIBuilder.Font(UITheme.FontPathMonoRegular);
 
-            var statusPill = BuildPill(right, "StatusPill", 118, out var statusDotHost, out _statusLabel);
+            var statusPill = BuildPill(right, "StatusPill", 118, out var statusDotHost, out _statusLabel, hasLeadingSlot: true);
             _statusLabel.font = UIBuilder.Font(UITheme.FontPathMonoRegular);
             _statusDot = statusDotHost.gameObject.AddComponent<Image>();
             _statusDot.sprite = UIBuilder.RoundedSpriteExact(7, 7, 4);
@@ -164,7 +164,7 @@ namespace FarmDashboard
             _tickText.font = UIBuilder.Font(UITheme.FontPathMonoRegular);
         }
 
-        private RectTransform BuildPill(Transform parent, string name, int width, out RectTransform leadingSlot, out TextMeshProUGUI text)
+        private RectTransform BuildPill(Transform parent, string name, int width, out RectTransform leadingSlot, out TextMeshProUGUI text, bool hasLeadingSlot = false)
         {
             // ContentSizeFitter + an anchor-stretched child turned out to size this
             // wildly wrong at runtime (a pill rendered ~900px wide, pushing the
@@ -180,8 +180,20 @@ namespace FarmDashboard
             inner.offsetMin = Vector2.zero;
             inner.offsetMax = Vector2.zero;
 
-            leadingSlot = UIBuilder.NewRect(inner, name + "_Lead");
-            UIBuilder.Flex(leadingSlot, 0, 0, 0, 0, 0, 0);
+            // Only pills that actually show something before the text (the status
+            // dot) get a leading slot -- it used to always exist at 0 width, but
+            // `inner`'s gap:6 still applied around it either way, quietly eating
+            // 6px that should've gone to the text and pushing it past the pill's
+            // own edge for the plain text-only pills (Turno/Tick).
+            if (hasLeadingSlot)
+            {
+                leadingSlot = UIBuilder.NewRect(inner, name + "_Lead");
+                UIBuilder.Flex(leadingSlot, 0, 0, 0, 0, 0, 0);
+            }
+            else
+            {
+                leadingSlot = null;
+            }
 
             text = UIBuilder.Text(inner, name + "_Text", "", UITheme.TypeBody12, UIBuilder.Font(UITheme.FontPathMonoRegular), UITheme.HeaderMonoText, TextAlignmentOptions.MidlineLeft);
             UIBuilder.Flex((RectTransform)text.transform, 1, 1);
