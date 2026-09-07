@@ -311,7 +311,11 @@ namespace FarmDashboard
             UIBuilder.Flex(headerRow, 1, 0, -1, 16, -1, 16);
             var labelText = UIBuilder.Text(headerRow, "Label", label, UITheme.TypeRowLabel13, UIBuilder.Font(UITheme.FontPathBodySemiBold), UITheme.TextPrimary, TextAlignmentOptions.MidlineLeft);
             UIBuilder.Flex((RectTransform)labelText.transform, 1, 1);
-            var statusRow = UIBuilder.HRow(headerRow, "Status", gap: 6, controlWidth: false, controlHeight: true, align: TextAnchor.MiddleRight);
+            // controlWidth:false here doesn't mean "leave the dot at its own
+            // 6px" -- it means the group never applies that width at all, so the
+            // dot's RectTransform kept Unity's default ~100 width and rendered as
+            // a bar smeared across the label text (same bug as the header pills).
+            var statusRow = UIBuilder.HRow(headerRow, "Status", gap: 6, controlWidth: true, controlHeight: true, align: TextAnchor.MiddleRight);
             UIBuilder.Flex(statusRow, 0, 1);
             var dotRt = UIBuilder.StatusDot(statusRow, "Dot", UITheme.StatusActivo, 6);
             var statusText = UIBuilder.Text(statusRow, "StatusText", "Activo", UITheme.TypeBody12 - 1, UIBuilder.Font(UITheme.FontPathBodyRegular), UITheme.StatusActivo, TextAlignmentOptions.MidlineLeft);
