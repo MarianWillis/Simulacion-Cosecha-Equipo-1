@@ -25,7 +25,15 @@ namespace FarmDashboard
             _state = state;
             var root = (RectTransform)transform;
 
-            var outer = UIBuilder.VCol(root, "Outer", gap: 0, controlWidth: true, controlHeight: true, forceExpand: true);
+            // forceExpand:true on both axes was stretching `header` past its
+            // explicit fixed 52 height too, not just filling width as intended --
+            // width should stretch (header/body span the full canvas width) but
+            // height must NOT (header stays exactly 52; body's own flexibleHeight=1
+            // is what correctly claims the rest). Set the two axes independently.
+            var outer = UIBuilder.VCol(root, "Outer", gap: 0, controlWidth: true, controlHeight: true);
+            var outerGroup = outer.GetComponent<VerticalLayoutGroup>();
+            outerGroup.childForceExpandWidth = true;
+            outerGroup.childForceExpandHeight = false;
             outer.anchorMin = Vector2.zero;
             outer.anchorMax = Vector2.one;
             outer.offsetMin = Vector2.zero;
