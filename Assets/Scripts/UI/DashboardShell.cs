@@ -296,7 +296,6 @@ namespace FarmDashboard
             var statusColor = _state.Running ? UITheme.GreenPrimary : UITheme.MidGray;
             _statusDot.color = statusColor;
             _statusLabel.color = statusColor;
-            Debug.Log($"[Dashboard] RefreshAll() actualizó el pill de estado -> texto='{_statusLabel.text}' Running={_state.Running}");
 
             foreach (var kv in _navButtons)
             {

@@ -130,21 +130,17 @@ namespace FarmDashboard
 
         public void StartRun()
         {
-            if (_state.Running) return;
             if (_state.UsingLiveData) _liveData.Resume();
             _state.Running = true;
             _tickTimer = 0f;
-            _shell.RefreshRunningControls();
+            _state.NotifyChanged();
         }
 
         public void PauseRun()
         {
-            Debug.Log($"[Dashboard] PauseRun() llamado. _state.Running antes = {_state.Running}");
-            if (!_state.Running) { Debug.Log("[Dashboard] PauseRun() salió temprano porque Running ya era false."); return; }
             if (_state.UsingLiveData) _liveData.Pause();
             _state.Running = false;
-            _shell.RefreshRunningControls();
-            Debug.Log($"[Dashboard] PauseRun() terminó. _state.Running ahora = {_state.Running}");
+            _state.NotifyChanged();
         }
 
         public void RestartRun()
@@ -160,7 +156,7 @@ namespace FarmDashboard
                 _state.RebuildVehicles();
             }
             _state.ActiveCamera = "general";
-            _shell.RefreshRunningControls();
+            _state.NotifyChanged();
         }
     }
 }
