@@ -70,7 +70,11 @@ namespace FarmDashboard
 
             // Left: logo tile + wordmark.
             var left = UIBuilder.HRow(row, "HeaderLeft", gap: 10, controlWidth: true, controlHeight: true, align: TextAnchor.MiddleLeft);
-            UIBuilder.Flex(left, 0, 1, 260, -1, 260, -1);
+            // No fixed width here (a hardcoded 260 was too narrow for "OPERATIONS
+            // SYSTEM | Granja TEC" and caused the brand name to overlap the
+            // wordmark) -- let it hug its own content instead; `right`'s
+            // flexibleWidth=1 is what pushes the pills to the header's far edge.
+            UIBuilder.Flex(left, 0, 1, -1, -1, -1, -1);
             var logoTile = UIBuilder.Panel(left, "LogoTile", UITheme.ChipBg, 7, exactWidth: 28, exactHeight: 28);
             UIBuilder.Flex(logoTile, 0, 0, 28, 28, 28, 28);
             BuildMiniLogoGrid(logoTile);
@@ -113,10 +117,13 @@ namespace FarmDashboard
 
         private RectTransform BuildPill(Transform parent, string name, out RectTransform leadingSlot, out TextMeshProUGUI text)
         {
-            // No exactWidth here (width is dynamic via ContentSizeFitter below), so
-            // this still uses the 9-sliced RoundedSprite path -- a small radius
-            // keeps any corner imperfection from that path barely noticeable.
-            var pill = UIBuilder.Panel(parent, name, UITheme.ChipBg, 4f);
+            // The 9-sliced RoundedSprite path turned out not to render correctly
+            // at runtime (see the logo/sidebar-icon fix) -- it was stretching this
+            // pill into a huge translucent bar across most of the header. Bake the
+            // mask at a generous reference width instead (Image.Type.Simple): the
+            // actual pill is narrower than this, so corners get very slightly
+            // squished horizontally, but that's imperceptible at a 4px radius.
+            var pill = UIBuilder.Panel(parent, name, UITheme.ChipBg, 4f, exactWidth: 220, exactHeight: 24);
             UIBuilder.Flex(pill, 0, 0, -1, 24, -1, 24);
             var fitter = pill.gameObject.AddComponent<ContentSizeFitter>();
             fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
