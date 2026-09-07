@@ -203,7 +203,7 @@ namespace FarmDashboard
                 leadingSlot = null;
             }
 
-            text = UIBuilder.Text(inner, name + "_Text", "", UITheme.TypeBody12, UIBuilder.Font(UITheme.FontPathMonoRegular), UITheme.HeaderMonoText, TextAlignmentOptions.MidlineLeft);
+            text = UIBuilder.Text(inner, name + "_Text", "", UITheme.TypeBody12, UIBuilder.Font(UITheme.FontPathMonoRegular), UITheme.HeaderMonoText, TextAlignmentOptions.Center);
             UIBuilder.Flex((RectTransform)text.transform, 1, 1);
             return pill;
         }
