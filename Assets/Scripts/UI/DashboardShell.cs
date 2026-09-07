@@ -164,9 +164,18 @@ namespace FarmDashboard
             var statusPill = BuildPill(right, "StatusPill", 118, out var statusDotHost, out _statusLabel, hasLeadingSlot: true);
             _statusLabel.font = UIBuilder.Font(UITheme.FontPathMonoRegular);
             _statusDot = statusDotHost.gameObject.AddComponent<Image>();
-            _statusDot.sprite = UIBuilder.RoundedSpriteExact(7, 7, 4);
+            // 8x8 with radius 4 = an exact half-radius circle (the StatusDot
+            // helper's proven-good ratio), baked at its final pixel size --
+            // Type.Sliced on a tiny runtime sprite stretches instead of slicing.
+            _statusDot.sprite = UIBuilder.RoundedSpriteExact(8, 8, 4);
             _statusDot.type = Image.Type.Simple;
-            UIBuilder.Flex(statusDotHost, 0, 0, 7, 7, 7, 7);
+            // BuildPill already added a LayoutElement to this GameObject (min/
+            // preferred 0,0) -- calling Flex() again would ADD A SECOND one
+            // instead of replacing it, leaving two components fighting over the
+            // size and stretching the dot into a capsule. Reuse the existing one.
+            var dotLayout = statusDotHost.GetComponent<LayoutElement>();
+            dotLayout.minWidth = dotLayout.preferredWidth = 8;
+            dotLayout.minHeight = dotLayout.preferredHeight = 8;
 
             BuildPill(right, "TickPill", 172, out _, out _tickText);
             _tickText.font = UIBuilder.Font(UITheme.FontPathMonoRegular);
