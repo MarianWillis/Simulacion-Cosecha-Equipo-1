@@ -160,7 +160,7 @@ namespace FarmDashboard
             _statusDot.type = Image.Type.Simple;
             UIBuilder.Flex(statusDotHost, 0, 0, 7, 7, 7, 7);
 
-            BuildPill(right, "TickPill", 160, out _, out _tickText);
+            BuildPill(right, "TickPill", 200, out _, out _tickText); // "Tick 0000 / 240" is the longest pill text, was clipping at 160
             _tickText.font = UIBuilder.Font(UITheme.FontPathMonoRegular);
         }
 
