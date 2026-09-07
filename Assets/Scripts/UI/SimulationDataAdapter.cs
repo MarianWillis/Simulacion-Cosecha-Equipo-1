@@ -78,6 +78,12 @@ namespace FarmDashboard
 
         private void OnPaso(PasoDTO paso)
         {
+            // A "paso" arriving at all is the strongest signal the sim is
+            // actively advancing (there's no explicit paused/running field in
+            // the protocol) -- keeps the header's En vivo/Pausado pill honest
+            // even before anyone touches Resume/Pause, and if it flips back to
+            // true after a Pause, that reflects the server actually resuming.
+            _state.Running = true;
             _state.Tick = paso.t;
 
             foreach (var a in paso.agentes)
