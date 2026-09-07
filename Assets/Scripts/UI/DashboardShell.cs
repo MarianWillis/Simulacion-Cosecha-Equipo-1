@@ -149,18 +149,18 @@ namespace FarmDashboard
             var right = UIBuilder.HRow(row, "HeaderRight", gap: 14, controlWidth: false, controlHeight: true, align: TextAnchor.MiddleCenter);
             UIBuilder.Flex(right, 1, 1);
 
-            BuildPill(right, "TurnoPill", 140, out _, out var turnoText);
+            BuildPill(right, "TurnoPill", 125, out _, out var turnoText);
             turnoText.text = "Turno: Diurno";
             turnoText.font = UIBuilder.Font(UITheme.FontPathMonoRegular);
 
-            var statusPill = BuildPill(right, "StatusPill", 120, out var statusDotHost, out _statusLabel);
+            var statusPill = BuildPill(right, "StatusPill", 108, out var statusDotHost, out _statusLabel);
             _statusLabel.font = UIBuilder.Font(UITheme.FontPathMonoRegular);
             _statusDot = statusDotHost.gameObject.AddComponent<Image>();
             _statusDot.sprite = UIBuilder.RoundedSpriteExact(7, 7, 4);
             _statusDot.type = Image.Type.Simple;
             UIBuilder.Flex(statusDotHost, 0, 0, 7, 7, 7, 7);
 
-            BuildPill(right, "TickPill", 200, out _, out _tickText); // "Tick 0000 / 240" is the longest pill text, was clipping at 160
+            BuildPill(right, "TickPill", 150, out _, out _tickText); // fits "Tick 0000 / 240" through "Tick 9999 / 9999" without the excess slack 200 had
             _tickText.font = UIBuilder.Font(UITheme.FontPathMonoRegular);
         }
 
