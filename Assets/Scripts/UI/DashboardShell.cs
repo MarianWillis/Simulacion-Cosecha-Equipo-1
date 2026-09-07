@@ -196,11 +196,15 @@ namespace FarmDashboard
             inner.anchorMax = Vector2.one;
             inner.offsetMin = Vector2.zero;
             inner.offsetMax = Vector2.zero;
-            // forceExpand:true stretches height too, ignoring the dot's own 7px
-            // min/preferred (same bug as the Flota title) -- it poked out past
-            // the pill's rounded edge. Text still centers fine since it asks for
-            // flexibleHeight via Flex below, which forceExpandHeight isn't needed for.
-            inner.GetComponent<HorizontalLayoutGroup>().childForceExpandHeight = false;
+            // forceExpand:true stretches BOTH axes for every child regardless of
+            // its own flexible weight (same bug as the Flota title) -- height was
+            // already turned off below, but width was still forceExpanding the
+            // dot (flexibleWidth 0) out into a capsule alongside the label text
+            // (flexibleWidth 1), which absorbs leftover width fine on its own
+            // without forceExpand's help.
+            var innerGroup = inner.GetComponent<HorizontalLayoutGroup>();
+            innerGroup.childForceExpandWidth = false;
+            innerGroup.childForceExpandHeight = false;
 
             // Only pills that actually show something before the text (the status
             // dot) get a leading slot -- it used to always exist at 0 width, but
