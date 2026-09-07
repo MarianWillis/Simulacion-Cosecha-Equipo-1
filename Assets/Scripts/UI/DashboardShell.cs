@@ -93,7 +93,7 @@ namespace FarmDashboard
 
         private void BuildHeader(Transform parent, string brandName, DashboardBootstrap bootstrap)
         {
-            var header = UIBuilder.Rect(parent, "Header", UITheme.PanelBg);
+            var header = UIBuilder.Rect(parent, "Header", Color.magenta); // TEMP recompile test -- revert once confirmed
             UIBuilder.Flex(header, 0, 0, -1, 52, -1, 52);
             var border = UIBuilder.Rect(header, "BottomBorder", UITheme.PanelBorder);
             ((RectTransform)border).anchorMin = new Vector2(0, 0);
