@@ -198,6 +198,11 @@ namespace FarmDashboard
             _fleetList.anchorMin = new Vector2(0, 1);
             _fleetList.anchorMax = new Vector2(1, 1);
             _fleetList.pivot = new Vector2(0.5f, 1f);
+            // Changing anchors alone doesn't reset offsetMin/Max -- they were
+            // still carrying the default 100x100 point-anchor's offsets, insetting
+            // the list from the left edge and clipping row text against the mask.
+            _fleetList.offsetMin = new Vector2(0f, _fleetList.offsetMin.y);
+            _fleetList.offsetMax = new Vector2(0f, _fleetList.offsetMax.y);
             var fitter = _fleetList.gameObject.AddComponent<ContentSizeFitter>();
             fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
             scrollRect.content = _fleetList;
