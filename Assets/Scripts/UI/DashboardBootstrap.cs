@@ -48,10 +48,7 @@ namespace FarmDashboard
             _shell.Init(_state, brandName, this);
             shellGo.SetActive(false);
 
-            var introGo = new GameObject("IntroView", typeof(RectTransform));
-            introGo.transform.SetParent(_canvasRoot, false);
-            var intro = introGo.AddComponent<IntroView>();
-            intro.Init(brandName, OnIntroComplete);
+            BuildIntro();
 
             _state.RebuildVehicles();
 
@@ -91,9 +88,27 @@ namespace FarmDashboard
             esGo.AddComponent<InputSystemUIInputModule>();
         }
 
+        private void BuildIntro()
+        {
+            var introGo = new GameObject("IntroView", typeof(RectTransform));
+            introGo.transform.SetParent(_canvasRoot, false);
+            var intro = introGo.AddComponent<IntroView>();
+            intro.Init(brandName, OnIntroComplete);
+        }
+
         private void OnIntroComplete()
         {
             _shell.gameObject.SetActive(true);
+        }
+
+        // Clicking the small logo tile in the header (see DashboardShell) replays
+        // the splash screen -- a common "logo goes back to the start" pattern.
+        // IntroView destroys itself once it hands off to the dashboard, so this
+        // just builds a fresh one rather than trying to reset/reshow the old one.
+        public void ShowIntro()
+        {
+            _shell.gameObject.SetActive(false);
+            BuildIntro();
         }
 
         private void Update()

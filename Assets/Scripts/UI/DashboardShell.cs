@@ -39,7 +39,7 @@ namespace FarmDashboard
             outer.offsetMin = Vector2.zero;
             outer.offsetMax = Vector2.zero;
 
-            BuildHeader(outer, brandName);
+            BuildHeader(outer, brandName, bootstrap);
 
             // Plain anchored container instead of a HorizontalLayoutGroup: after
             // repeatedly hitting nested-LayoutGroup sizing bugs all session (the
@@ -91,7 +91,7 @@ namespace FarmDashboard
             if (_state != null) _state.Changed -= RefreshAll;
         }
 
-        private void BuildHeader(Transform parent, string brandName)
+        private void BuildHeader(Transform parent, string brandName, DashboardBootstrap bootstrap)
         {
             var header = UIBuilder.Rect(parent, "Header", UITheme.PanelBg);
             UIBuilder.Flex(header, 0, 0, -1, 52, -1, 52);
@@ -118,6 +118,15 @@ namespace FarmDashboard
             var logoTile = UIBuilder.Panel(left, "LogoTile", UITheme.ChipBg, 7, exactWidth: 28, exactHeight: 28);
             UIBuilder.Flex(logoTile, 0, 0, 28, 28, 28, 28);
             BuildMiniLogoGrid(logoTile);
+            // Clicking the corner logo replays the splash screen.
+            var logoButton = logoTile.gameObject.AddComponent<Button>();
+            logoButton.targetGraphic = logoTile.GetComponent<Image>();
+            logoButton.transition = Selectable.Transition.None;
+            logoButton.onClick.AddListener(() => bootstrap.ShowIntro());
+            var logoHover = logoTile.gameObject.AddComponent<ButtonHoverColor>();
+            logoHover.Image = logoTile.GetComponent<Image>();
+            logoHover.NormalColor = UITheme.ChipBg;
+            logoHover.HoverColor = UITheme.DividerTrackBg;
 
             // Three separate TMP elements (not one rich-text block) so each can use
             // its own font asset/weight without relying on TMP's <font> tag lookup.
@@ -189,6 +198,10 @@ namespace FarmDashboard
             var bot = UIBuilder.HRow(grid, "Bottom", gap: 2, controlWidth: true, controlHeight: true, forceExpand: true); UIBuilder.Flex(bot, 1, 1);
             var c = UIBuilder.Rect(bot, "C", UITheme.GreenDark); UIBuilder.Flex(c, 1, 1);
             var d = UIBuilder.Rect(bot, "D", UITheme.BrownAccent); UIBuilder.Flex(d, 1, 1);
+            // Purely decorative -- don't let them catch the click meant for the
+            // logo tile's own Button (see the input-field "_Fill" raycast fix).
+            foreach (var tileRect in new[] { a, b, c, d })
+                tileRect.GetComponent<Image>().raycastTarget = false;
         }
 
         private void BuildSidebar(Transform parent)
