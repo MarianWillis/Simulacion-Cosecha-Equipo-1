@@ -41,14 +41,31 @@ namespace FarmDashboard
 
             BuildHeader(outer, brandName);
 
-            var body = UIBuilder.HRow(outer, "Body", gap: 0, controlWidth: true, controlHeight: true, forceExpand: true);
+            // Plain anchored container instead of a HorizontalLayoutGroup: after
+            // repeatedly hitting nested-LayoutGroup sizing bugs all session (the
+            // sidebar itself was the latest victim, drifting ~250px right for no
+            // traceable reason), the sidebar/content split is simple enough to
+            // just pin directly with anchors -- no layout recalculation involved,
+            // so nothing downstream can ever knock it loose again.
+            var body = UIBuilder.NewRect(outer, "Body");
             UIBuilder.Flex(body, 0, 1);
 
-            BuildSidebar(body);
+            const float sidebarWidth = 72f;
+            var sidebarHost = UIBuilder.NewRect(body, "SidebarHost");
+            sidebarHost.anchorMin = new Vector2(0f, 0f);
+            sidebarHost.anchorMax = new Vector2(0f, 1f);
+            sidebarHost.pivot = new Vector2(0f, 0.5f);
+            sidebarHost.sizeDelta = new Vector2(sidebarWidth, 0f);
+            sidebarHost.anchoredPosition = Vector2.zero;
+            BuildSidebar(sidebarHost);
 
             ContentArea = UIBuilder.HRow(body, "ContentArea", gap: UITheme.GapMajor,
                 padding: new RectOffset(24, 24, 20, 20), controlWidth: true, controlHeight: true, forceExpand: true);
-            UIBuilder.Flex(ContentArea, 1, 1);
+            ContentArea.anchorMin = new Vector2(0f, 0f);
+            ContentArea.anchorMax = new Vector2(1f, 1f);
+            ContentArea.pivot = new Vector2(0.5f, 0.5f);
+            ContentArea.offsetMin = new Vector2(sidebarWidth, 0f);
+            ContentArea.offsetMax = Vector2.zero;
 
             _placeholderRoot = UIBuilder.NewRect(ContentArea, "Placeholder");
             UIBuilder.Flex(_placeholderRoot, 1, 1);
@@ -176,8 +193,14 @@ namespace FarmDashboard
 
         private void BuildSidebar(Transform parent)
         {
+            // `parent` (SidebarHost) is already pinned to exactly 72px via direct
+            // anchors in Init() -- just stretch-fill it, no Flex/LayoutElement
+            // needed for sidebar's own sizing.
             var sidebar = UIBuilder.VCol(parent, "Sidebar", gap: 8, padding: new RectOffset(0, 0, 12, 12), controlWidth: true, controlHeight: true, align: TextAnchor.UpperCenter);
-            UIBuilder.Flex(sidebar, 0, 0, 72, -1, 72, -1);
+            sidebar.anchorMin = Vector2.zero;
+            sidebar.anchorMax = Vector2.one;
+            sidebar.offsetMin = Vector2.zero;
+            sidebar.offsetMax = Vector2.zero;
 
             // Each button's icon badge gets its own accent color (matching the
             // reference design) with a dark glyph on top -- only Home keeps the
