@@ -302,9 +302,12 @@ namespace FarmDashboard
 
         private (Image dot, TextMeshProUGUI status, UIBuilder.ProgressBarHandle fuel, TextMeshProUGUI fuelPct, TextMeshProUGUI rounds) BuildFleetRow(string id, string label)
         {
-            var row = UIBuilder.Panel(_fleetList, $"Row_{id}", UITheme.CardBgNested, UITheme.RadiusRow, exactWidth: 280, exactHeight: 84);
-            UIBuilder.Flex(row, 1, 0, -1, 84, -1, 84);
-            var col = UIBuilder.VCol(row, "Col", gap: 8, padding: new RectOffset(12, 16, 12, 12), controlWidth: true, controlHeight: true, forceExpand: true);
+            // Content (header 16 + fuel label 12 + fuel bar 6 + rounds 16, with
+            // 8px gaps between each) adds up to ~74px on its own -- 84 barely
+            // left room for the padding, let alone breathing room at the bottom.
+            var row = UIBuilder.Panel(_fleetList, $"Row_{id}", UITheme.CardBgNested, UITheme.RadiusRow, exactWidth: 280, exactHeight: 106);
+            UIBuilder.Flex(row, 1, 0, -1, 106, -1, 106);
+            var col = UIBuilder.VCol(row, "Col", gap: 8, padding: new RectOffset(12, 16, 12, 18), controlWidth: true, controlHeight: true, forceExpand: true);
             col.anchorMin = Vector2.zero; col.anchorMax = Vector2.one; col.offsetMin = Vector2.zero; col.offsetMax = Vector2.zero;
 
             var headerRow = UIBuilder.HRow(col, "Header", controlWidth: true, controlHeight: true);
