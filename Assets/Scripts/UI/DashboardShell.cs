@@ -146,7 +146,7 @@ namespace FarmDashboard
             UIBuilder.Flex((RectTransform)brandText.transform, 1, 1);
 
             // Right: 3 monospace pills.
-            var right = UIBuilder.HRow(row, "HeaderRight", gap: 14, controlWidth: false, controlHeight: true, align: TextAnchor.MiddleRight);
+            var right = UIBuilder.HRow(row, "HeaderRight", gap: 14, controlWidth: false, controlHeight: true, align: TextAnchor.MiddleCenter);
             UIBuilder.Flex(right, 1, 1);
 
             BuildPill(right, "TurnoPill", 140, out _, out var turnoText);
