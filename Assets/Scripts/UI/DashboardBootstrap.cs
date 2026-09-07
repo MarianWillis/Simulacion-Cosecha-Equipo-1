@@ -45,7 +45,7 @@ namespace FarmDashboard
             shellRect.offsetMin = Vector2.zero;
             shellRect.offsetMax = Vector2.zero;
             _shell = shellGo.AddComponent<DashboardShell>();
-            _shell.Init(_state, brandName);
+            _shell.Init(_state, brandName, this);
             shellGo.SetActive(false);
 
             var introGo = new GameObject("IntroView", typeof(RectTransform));
@@ -116,8 +116,33 @@ namespace FarmDashboard
         public void StartRun()
         {
             if (_state.Running) return;
+            if (_state.UsingLiveData) _liveData.Resume();
             _state.Running = true;
             _tickTimer = 0f;
+            _shell.RefreshRunningControls();
+        }
+
+        public void PauseRun()
+        {
+            if (!_state.Running) return;
+            if (_state.UsingLiveData) _liveData.Pause();
+            _state.Running = false;
+            _shell.RefreshRunningControls();
+        }
+
+        public void RestartRun()
+        {
+            if (_state.UsingLiveData)
+            {
+                _liveData.Restart(_state.Config);
+            }
+            else
+            {
+                _tickTimer = 0f;
+                _state.Running = false;
+                _state.RebuildVehicles();
+            }
+            _state.ActiveCamera = "general";
             _shell.RefreshRunningControls();
         }
     }

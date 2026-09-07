@@ -387,5 +387,52 @@ namespace FarmDashboard
             hover.HoverColor = hoverBg;
             return btn;
         }
+
+        // Labeled numeric field matching the "Configuración" card style: label
+        // above, dark input below with a 1px divider-colored border that turns
+        // gold on focus (the app's one interactive-state signature, per spec).
+        public static TMP_InputField NumberField(Transform parent, string name, string label, int initialValue, System.Action<int> onChanged)
+        {
+            var host = VCol(parent, name, gap: 4, controlWidth: true, controlHeight: true, forceExpand: true);
+            Flex(host, 1, 0, -1, 54, -1, 54);
+
+            var labelText = Text(host, name + "_Label", label, UITheme.TypeCaption10, Font(UITheme.FontPathBodyRegular), UITheme.TextMuted2, TextAlignmentOptions.MidlineLeft);
+            Flex((RectTransform)labelText.transform, 1, 0, -1, 14, -1, 14);
+
+            var fieldHost = Panel(host, name + "_Field", UITheme.ChipBg, 6f, exactWidth: 260, exactHeight: 32, borderColor: UITheme.DividerTrackBg, borderWidth: 1f);
+            Flex(fieldHost, 1, 0, -1, 32, -1, 32);
+
+            var textGo = NewRect(fieldHost, "Text");
+            textGo.anchorMin = Vector2.zero;
+            textGo.anchorMax = Vector2.one;
+            textGo.offsetMin = new Vector2(9, 4);
+            textGo.offsetMax = new Vector2(-9, -4);
+            var tmpText = textGo.gameObject.AddComponent<TextMeshProUGUI>();
+            tmpText.font = Font(UITheme.FontPathBodyRegular);
+            tmpText.fontSize = UITheme.TypeBody12;
+            tmpText.color = UITheme.TextPrimary;
+            tmpText.alignment = TextAlignmentOptions.MidlineLeft;
+
+            var fieldImg = fieldHost.GetComponent<Image>();
+            var field = fieldHost.gameObject.AddComponent<TMP_InputField>();
+            field.targetGraphic = fieldImg;
+            field.textComponent = tmpText;
+            field.contentType = TMP_InputField.ContentType.IntegerNumber;
+            field.text = initialValue.ToString();
+            field.transition = Selectable.Transition.None;
+
+            var focus = fieldHost.gameObject.AddComponent<InputFocusBorder>();
+            focus.Border = fieldImg;
+            focus.NormalColor = UITheme.DividerTrackBg;
+            focus.FocusColor = UITheme.GoldBright;
+            focus.Attach(field);
+
+            field.onEndEdit.AddListener(v =>
+            {
+                if (int.TryParse(v, out var iv)) onChanged?.Invoke(iv);
+            });
+
+            return field;
+        }
     }
 }

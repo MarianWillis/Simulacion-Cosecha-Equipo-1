@@ -17,8 +17,10 @@ namespace FarmDashboard
 
         private readonly Dictionary<DashView, (Image bg, TextMeshProUGUI label, ButtonHoverColor hover)> _navButtons = new();
         private TextMeshProUGUI _placeholderText;
+        private RectTransform _placeholderRoot;
+        private HomeView _homeView;
 
-        public void Init(DashboardState state, string brandName)
+        public void Init(DashboardState state, string brandName, DashboardBootstrap bootstrap)
         {
             _state = state;
             var root = (RectTransform)transform;
@@ -40,8 +42,20 @@ namespace FarmDashboard
                 padding: new RectOffset(24, 24, 20, 20), controlWidth: true, controlHeight: true, forceExpand: true);
             UIBuilder.Flex(ContentArea, 1, 1);
 
-            _placeholderText = UIBuilder.Text(ContentArea, "Placeholder", ViewLabel(_state.View),
+            _placeholderRoot = UIBuilder.NewRect(ContentArea, "Placeholder");
+            UIBuilder.Flex(_placeholderRoot, 1, 1);
+            _placeholderText = UIBuilder.Text(_placeholderRoot, "PlaceholderText", ViewLabel(_state.View),
                 UITheme.TypeDisplay38, UIBuilder.Font(UITheme.FontPathDisplay), UITheme.TextMuted1, TextAlignmentOptions.TopLeft);
+            _placeholderText.rectTransform.anchorMin = Vector2.zero;
+            _placeholderText.rectTransform.anchorMax = Vector2.one;
+            _placeholderText.rectTransform.offsetMin = Vector2.zero;
+            _placeholderText.rectTransform.offsetMax = Vector2.zero;
+
+            var homeGo = new GameObject("HomeView", typeof(RectTransform));
+            homeGo.transform.SetParent(ContentArea, false);
+            UIBuilder.Flex((RectTransform)homeGo.transform, 1, 1);
+            _homeView = homeGo.AddComponent<HomeView>();
+            _homeView.Init(_state, bootstrap);
 
             _state.Changed += RefreshAll;
             RefreshAll();
@@ -228,7 +242,11 @@ namespace FarmDashboard
                 kv.Value.label.color = active ? UITheme.TextPrimary : UITheme.TextMuted2;
             }
 
-            if (_placeholderText != null) _placeholderText.text = ViewLabel(_state.View) + "\n(vista en construcción -- próxima entrega)";
+            bool isHome = _state.View == DashView.Home;
+            _placeholderRoot.gameObject.SetActive(!isHome);
+            _homeView.gameObject.SetActive(isHome);
+            if (!isHome && _placeholderText != null)
+                _placeholderText.text = ViewLabel(_state.View) + "\n(vista en construcción -- próxima entrega)";
         }
 
         private static string ViewLabel(DashView v) => v switch
