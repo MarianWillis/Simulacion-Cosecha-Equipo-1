@@ -41,8 +41,30 @@ namespace FarmDashboard
 
             BuildCameraCard(layout);
 
-            var rightCol = UIBuilder.VCol(layout, "RightColumn", gap: UITheme.GapMajor, controlWidth: true, controlHeight: true, forceExpand: true);
-            UIBuilder.Flex(rightCol, 1, 1, 260, -1);
+            // Configuración (820px, 10 fields) + Flota easily add up to more than
+            // the available height -- wrap the whole right column in a scroll
+            // view (same pattern as the Flota list's own internal scroll) instead
+            // of letting it overflow/get cut off at the bottom of the screen.
+            var rightColHost = UIBuilder.NewRect(layout, "RightColumnHost");
+            UIBuilder.Flex(rightColHost, 1, 1, 260, -1);
+            rightColHost.gameObject.AddComponent<RectMask2D>();
+            var rightScrollRect = rightColHost.gameObject.AddComponent<ScrollRect>();
+            rightScrollRect.horizontal = false;
+            rightScrollRect.movementType = ScrollRect.MovementType.Clamped;
+
+            var rightCol = UIBuilder.VCol(rightColHost, "RightColumn", gap: UITheme.GapMajor, controlWidth: true, controlHeight: true, forceExpand: true);
+            rightCol.anchorMin = new Vector2(0f, 1f);
+            rightCol.anchorMax = new Vector2(1f, 1f);
+            rightCol.pivot = new Vector2(0.5f, 1f);
+            // Reset offsets after re-anchoring -- leaving stale ones from the
+            // default 100x100 rect is exactly what clipped the Flota row text
+            // earlier this session.
+            rightCol.offsetMin = new Vector2(0f, rightCol.offsetMin.y);
+            rightCol.offsetMax = new Vector2(0f, rightCol.offsetMax.y);
+            var rightColFitter = rightCol.gameObject.AddComponent<ContentSizeFitter>();
+            rightColFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            rightScrollRect.content = rightCol;
+            rightScrollRect.viewport = rightColHost;
 
             BuildConfigCard(rightCol);
             BuildFleetCard(rightCol);
@@ -159,7 +181,13 @@ namespace FarmDashboard
         private void BuildFleetCard(Transform parent)
         {
             var card = UIBuilder.Panel(parent, "FleetCard", UITheme.PanelBg, UITheme.RadiusCard, exactWidth: 300, exactHeight: 300, borderColor: UITheme.PanelBorder);
-            UIBuilder.Flex(card, 0, 1, -1, 220);
+            // Fixed height, not flexible: now that the whole right column lives
+            // inside a ContentSizeFitter'd scroll view (see Init()), "flexible,
+            // fills remaining space" doesn't apply -- there's no fixed remaining
+            // space to fill, the column just grows and the scrollbar handles
+            // overflow. The card's own list still scrolls internally if the
+            // fleet has more vehicles than fit in 300px.
+            UIBuilder.Flex(card, 0, 0, -1, 300, -1, 300);
             var col = UIBuilder.VCol(card, "Col", gap: 12, padding: new RectOffset(16, 16, 16, 16), controlWidth: true, controlHeight: true, forceExpand: true);
             col.anchorMin = Vector2.zero; col.anchorMax = Vector2.one; col.offsetMin = Vector2.zero; col.offsetMax = Vector2.zero;
 
