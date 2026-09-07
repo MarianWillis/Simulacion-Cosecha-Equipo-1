@@ -70,11 +70,12 @@ namespace FarmDashboard
 
             // Left: logo tile + wordmark.
             var left = UIBuilder.HRow(row, "HeaderLeft", gap: 10, controlWidth: true, controlHeight: true, align: TextAnchor.MiddleLeft);
-            // No fixed width here (a hardcoded 260 was too narrow for "OPERATIONS
-            // SYSTEM | Granja TEC" and caused the brand name to overlap the
-            // wordmark) -- let it hug its own content instead; `right`'s
-            // flexibleWidth=1 is what pushes the pills to the header's far edge.
-            UIBuilder.Flex(left, 0, 1, -1, -1, -1, -1);
+            // Explicit fixed width, same as the sidebar-button bug: `left` is
+            // itself a HorizontalLayoutGroup, and leaving its width unset (-1)
+            // hits the exact same nested-LayoutGroup mis-sizing bug regardless of
+            // whether the nesting is same-axis or cross-axis. 420 comfortably
+            // fits "OPERATIONS SYSTEM | Granja TEC" (260 was just too narrow).
+            UIBuilder.Flex(left, 0, 1, 420, -1, 420, -1);
             var logoTile = UIBuilder.Panel(left, "LogoTile", UITheme.ChipBg, 7, exactWidth: 28, exactHeight: 28);
             UIBuilder.Flex(logoTile, 0, 0, 28, 28, 28, 28);
             BuildMiniLogoGrid(logoTile);
