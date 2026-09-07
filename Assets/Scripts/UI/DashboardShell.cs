@@ -56,7 +56,7 @@ namespace FarmDashboard
             sidebarHost.anchorMax = new Vector2(0f, 1f);
             sidebarHost.pivot = new Vector2(0f, 0.5f);
             sidebarHost.sizeDelta = new Vector2(sidebarWidth, 0f);
-            sidebarHost.anchoredPosition = Vector2.zero;
+            sidebarHost.anchoredPosition = new Vector2(6f, 0f); // small nudge off the screen edge -- icons were getting clipped flush against x=0
             BuildSidebar(sidebarHost);
 
             ContentArea = UIBuilder.HRow(body, "ContentArea", gap: UITheme.GapMajor,
