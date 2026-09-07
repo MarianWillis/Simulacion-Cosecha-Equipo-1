@@ -17,10 +17,10 @@ namespace FarmDashboard
 
         private RectTransform _gridCanvas;
         private Button _resumeButton;
-        private Image _resumeBg;
+        private ButtonHoverColor _resumeHover;
         private TextMeshProUGUI _resumeLabel;
         private Button _pauseButton;
-        private Image _pauseBg;
+        private ButtonHoverColor _pauseHover;
         private TextMeshProUGUI _pauseLabel;
 
         private RectTransform _fleetList;
@@ -128,16 +128,23 @@ namespace FarmDashboard
             var divider = UIBuilder.Rect(col, "Divider", UITheme.DividerTrackBg);
             UIBuilder.Flex(divider, 1, 0, -1, 1, -1, 1);
 
-            _resumeButton = UIBuilder.Button(col, "ResumeBtn", UITheme.GreenPrimary, UITheme.GreenPrimary, UITheme.RadiusButton, exactWidth: 268, exactHeight: 34);
+            // Hover color is a lighter tint of green/gold rather than matching
+            // Normal exactly, so there's visible feedback even before the press-
+            // darken kicks in. RefreshButtons() below must go through
+            // ButtonHoverColor.SetBaseColor(), not set .color directly -- otherwise
+            // moving the mouse off the button after a state change would snap it
+            // back to whatever Normal color the button was CREATED with, not the
+            // current enabled/disabled color.
+            _resumeButton = UIBuilder.Button(col, "ResumeBtn", UITheme.GreenPrimary, Hex("#5fb857"), UITheme.RadiusButton, exactWidth: 268, exactHeight: 34);
             UIBuilder.Flex((RectTransform)_resumeButton.transform, 1, 0, -1, 34, -1, 34);
-            _resumeBg = _resumeButton.GetComponent<Image>();
+            _resumeHover = _resumeButton.GetComponent<ButtonHoverColor>();
             _resumeLabel = UIBuilder.Text(_resumeButton.transform, "Label", "RESUME", UITheme.TypeStatusButton11, UIBuilder.Font(UITheme.FontPathBodyExtraBold), UITheme.OnGreenText, TextAlignmentOptions.Center);
             StretchFill((RectTransform)_resumeLabel.transform);
             _resumeButton.onClick.AddListener(() => _bootstrap.StartRun());
 
-            _pauseButton = UIBuilder.Button(col, "PauseBtn", UITheme.DividerTrackBg, UITheme.DividerTrackBg, UITheme.RadiusButton, exactWidth: 268, exactHeight: 34);
+            _pauseButton = UIBuilder.Button(col, "PauseBtn", UITheme.DividerTrackBg, Hex("#3a3826"), UITheme.RadiusButton, exactWidth: 268, exactHeight: 34);
             UIBuilder.Flex((RectTransform)_pauseButton.transform, 1, 0, -1, 34, -1, 34);
-            _pauseBg = _pauseButton.GetComponent<Image>();
+            _pauseHover = _pauseButton.GetComponent<ButtonHoverColor>();
             _pauseLabel = UIBuilder.Text(_pauseButton.transform, "Label", "PAUSE", UITheme.TypeStatusButton11, UIBuilder.Font(UITheme.FontPathBodyExtraBold), UITheme.MidGray, TextAlignmentOptions.Center);
             StretchFill((RectTransform)_pauseLabel.transform);
             _pauseButton.onClick.AddListener(() => _bootstrap.PauseRun());
@@ -192,6 +199,12 @@ namespace FarmDashboard
             scrollRect.viewport = scrollHost;
         }
 
+        private static Color Hex(string hex)
+        {
+            ColorUtility.TryParseHtmlString(hex, out var c);
+            return c;
+        }
+
         private static void StretchFill(RectTransform rt)
         {
             rt.anchorMin = Vector2.zero;
@@ -209,11 +222,11 @@ namespace FarmDashboard
         private void RefreshButtons()
         {
             bool running = _state.Running;
-            _resumeBg.color = running ? UITheme.DividerTrackBg : UITheme.GreenPrimary;
+            _resumeHover.SetBaseColor(running ? UITheme.DividerTrackBg : UITheme.GreenPrimary);
             _resumeLabel.color = running ? UITheme.MidGray : UITheme.OnGreenText;
             _resumeButton.interactable = !running;
 
-            _pauseBg.color = running ? UITheme.GoldBright : UITheme.DividerTrackBg;
+            _pauseHover.SetBaseColor(running ? UITheme.GoldBright : UITheme.DividerTrackBg);
             _pauseLabel.color = running ? UITheme.OnGoldText : UITheme.MidGray;
             _pauseButton.interactable = running;
         }
