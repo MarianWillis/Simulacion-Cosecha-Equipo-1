@@ -6,18 +6,16 @@ using UnityEngine.UI;
 namespace FarmDashboard
 {
     // README section 3: two-column Home layout -- "Vista general" camera card
-    // on the left, Configuración + Flota cards on the right. Built once in
-    // Init(); Refresh() (called on every DashboardState.Changed) updates marker
-    // positions, fuel bars, and button states without rebuilding the grid/cards.
+    // (a CameraFeedSlot reserved for the real 3D Unity camera feed, not a 2D
+    // abstraction) on the left, Configuración + Flota cards on the right.
+    // Built once in Init(); Refresh() (on every DashboardState.Changed)
+    // updates fuel bars and button states without rebuilding the cards.
     public class HomeView : MonoBehaviour
     {
         private DashboardState _state;
         private DashboardBootstrap _bootstrap;
 
         private RectTransform _gridCanvas;
-        private RectTransform _markersLayer;
-        private readonly Dictionary<string, RectTransform> _markers = new();
-
         private Button _resumeButton;
         private Image _resumeBg;
         private TextMeshProUGUI _resumeLabel;
@@ -28,8 +26,6 @@ namespace FarmDashboard
         private RectTransform _fleetList;
         private readonly Dictionary<string, (Image dot, TextMeshProUGUI status, UIBuilder.ProgressBarHandle fuel, TextMeshProUGUI fuelPct, TextMeshProUGUI rounds)> _fleetRows = new();
         private int _lastVehicleCount = -1;
-        private int _lastRows = -1;
-        private int _lastCols = -1;
 
         public void Init(DashboardState state, DashboardBootstrap bootstrap)
         {
@@ -88,45 +84,16 @@ namespace FarmDashboard
             accent.sizeDelta = new Vector2(36, 4);
             accent.anchoredPosition = new Vector2(0, -4);
 
+            // Reserved for the real Unity camera feed (RenderTexture) of the 3D
+            // farm scene -- not a 2D abstraction. Whoever wires up the actual
+            // camera rig assigns it via CameraFeedSlot.Find("general").SetFeed(...).
             _gridCanvas = UIBuilder.Panel(col, "GridCanvas", UITheme.GridFieldBg, UITheme.RadiusNested, exactWidth: 660, exactHeight: 420);
             UIBuilder.Flex(_gridCanvas, 1, 1, -1, 320);
-
-            _markersLayer = UIBuilder.NewRect(_gridCanvas, "Markers");
-            _markersLayer.anchorMin = Vector2.zero; _markersLayer.anchorMax = Vector2.one;
-            _markersLayer.offsetMin = Vector2.zero; _markersLayer.offsetMax = Vector2.zero;
-        }
-
-        private void RebuildGridLines()
-        {
-            // Clear previous lines (cheap: grid only rebuilds when rows/cols change).
-            foreach (Transform child in _gridCanvas)
-            {
-                if (child == _markersLayer) continue;
-                Destroy(child.gameObject);
-            }
-
-            int rows = Mathf.Max(_state.Config.Rows, 1);
-            int cols = Mathf.Max(_state.Config.Cols, 1);
-
-            for (int r = 1; r < rows; r++)
-            {
-                var line = UIBuilder.Rect(_gridCanvas, $"RowLine{r}", UITheme.GridCellBorder);
-                float y = 1f - (float)r / rows;
-                line.anchorMin = new Vector2(0f, y);
-                line.anchorMax = new Vector2(1f, y);
-                line.sizeDelta = new Vector2(0f, 1f);
-                line.transform.SetAsFirstSibling();
-            }
-            for (int c = 1; c < cols; c++)
-            {
-                var line = UIBuilder.Rect(_gridCanvas, $"ColLine{c}", UITheme.GridCellBorder);
-                float x = (float)c / cols;
-                line.anchorMin = new Vector2(x, 0f);
-                line.anchorMax = new Vector2(x, 1f);
-                line.sizeDelta = new Vector2(1f, 0f);
-                line.transform.SetAsFirstSibling();
-            }
-            _markersLayer.SetAsLastSibling();
+            var feedSlot = CameraFeedSlot.Create(_gridCanvas, "general", UITheme.GridFieldBg);
+            feedSlot.Image.rectTransform.anchorMin = Vector2.zero;
+            feedSlot.Image.rectTransform.anchorMax = Vector2.one;
+            feedSlot.Image.rectTransform.offsetMin = Vector2.zero;
+            feedSlot.Image.rectTransform.offsetMax = Vector2.zero;
         }
 
         private void BuildConfigCard(Transform parent)
@@ -144,8 +111,8 @@ namespace FarmDashboard
             var title = UIBuilder.Text(col, "Title", "Configuración", UITheme.TypeRowLabel13, UIBuilder.Font(UITheme.FontPathBodyBold), UITheme.TextPrimary, TextAlignmentOptions.MidlineLeft);
             UIBuilder.Flex((RectTransform)title.transform, 1, 0, -1, 16, -1, 16);
 
-            UIBuilder.NumberField(col, "Filas", "Filas", _state.Config.Rows, v => { _state.Config.Rows = Mathf.Clamp(v, 3, 8); RebuildGridLines(); });
-            UIBuilder.NumberField(col, "Columnas", "Columnas", _state.Config.Cols, v => { _state.Config.Cols = Mathf.Clamp(v, 3, 8); RebuildGridLines(); });
+            UIBuilder.NumberField(col, "Filas", "Filas", _state.Config.Rows, v => _state.Config.Rows = Mathf.Clamp(v, 3, 8));
+            UIBuilder.NumberField(col, "Columnas", "Columnas", _state.Config.Cols, v => _state.Config.Cols = Mathf.Clamp(v, 3, 8));
             UIBuilder.NumberField(col, "Tractores", "Tractores", _state.Config.Tractores, v => _state.Config.Tractores = Mathf.Clamp(v, 0, 4));
             UIBuilder.NumberField(col, "Cosechadores", "Cosechadores", _state.Config.Cosechadores, v => _state.Config.Cosechadores = Mathf.Clamp(v, 0, 4));
 
@@ -226,49 +193,8 @@ namespace FarmDashboard
 
         private void Refresh()
         {
-            if (_state.Config.Rows != _lastRows || _state.Config.Cols != _lastCols)
-            {
-                _lastRows = _state.Config.Rows;
-                _lastCols = _state.Config.Cols;
-                RebuildGridLines();
-            }
-
-            RefreshMarkers();
             RefreshButtons();
             RefreshFleet();
-        }
-
-        private void RefreshMarkers()
-        {
-            int rows = Mathf.Max(_state.Config.Rows, 1);
-            int cols = Mathf.Max(_state.Config.Cols, 1);
-
-            var seen = new HashSet<string>();
-            foreach (var v in _state.Vehicles)
-            {
-                seen.Add(v.Id);
-                if (!_markers.TryGetValue(v.Id, out var marker))
-                {
-                    marker = UIBuilder.NewRect(_markersLayer, $"Marker_{v.Id}");
-                    var img = marker.gameObject.AddComponent<Image>();
-                    img.sprite = UIBuilder.RoundedSpriteExact(14, 14, 7);
-                    marker.sizeDelta = new Vector2(14, 14);
-                    marker.pivot = new Vector2(0.5f, 0.5f);
-                    _markers[v.Id] = marker;
-                }
-                float ax = (v.Col + 0.5f) / cols;
-                float ay = 1f - (v.Fila + 0.5f) / rows;
-                marker.anchorMin = marker.anchorMax = new Vector2(ax, ay);
-                marker.GetComponent<Image>().color = v.Type == VehicleType.Tractor ? UITheme.TractorMarker : UITheme.CosechadorMarker;
-            }
-
-            var stale = new List<string>();
-            foreach (var kv in _markers) if (!seen.Contains(kv.Key)) stale.Add(kv.Key);
-            foreach (var id in stale)
-            {
-                Destroy(_markers[id].gameObject);
-                _markers.Remove(id);
-            }
         }
 
         private void RefreshButtons()
