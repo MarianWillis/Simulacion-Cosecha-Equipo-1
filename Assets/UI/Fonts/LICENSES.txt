@@ -1,0 +1,17 @@
+Fonts bundled in this folder (all open-license, safe to redistribute in a build):
+
+- Archivo Black (ArchivoBlack-Regular.ttf)
+  SIL Open Font License 1.1
+  https://github.com/Omnibus-Type/ArchivoBlack
+  Used as the free equivalent of the design spec's "Arial Black" display font.
+
+- Roboto Mono (RobotoMono-Regular/Medium/Bold.ttf)
+  Apache License 2.0
+  https://github.com/googlefonts/RobotoMono
+  Used as-is per the design spec for numeric/monospace data.
+
+- Inter (Inter-ExtraLight/Regular/SemiBold/Bold/ExtraBold.ttf)
+  SIL Open Font License 1.1
+  https://github.com/rsms/inter
+  Used as the free equivalent of the design spec's system-ui body font
+  (-apple-system / Helvetica Neue / Arial stack).

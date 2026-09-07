@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -38,6 +39,13 @@ namespace Puente
         private readonly Dictionary<(int fila, int col), GameObject> trigoPorCelda = new();
 
         public MetricasDTO UltimasMetricas { get; private set; }
+
+        // Hooks de solo-lectura para el dashboard de UI (Assets/Scripts/UI):
+        // se disparan al final de ManejarInit/ManejarPaso sin cambiar nada de
+        // la logica de esta clase. GestorSimulacion no conoce ni depende del
+        // dashboard -- es el dashboard el que se suscribe.
+        public event Action<InitDTO> AlIniciar;
+        public event Action<PasoDTO> AlAvanzarPaso;
 
         private void Awake()
         {
@@ -96,6 +104,8 @@ namespace Puente
 
             foreach (var t in init.tractores)
                 CrearAgente(prefabTractor, "tractor", t.id, t.fila, t.col);
+
+            AlIniciar?.Invoke(init);
         }
 
         private void LimpiarEscena()
@@ -175,6 +185,8 @@ namespace Puente
                 $"descomposturas={paso.metricas.descomposturas_totales} " +
                 $"gasolina=[{gasolinaPorAgente}] " +
                 $"cosechado_x_harvester=[{cosechadoPorHarvester}]");
+
+            AlAvanzarPaso?.Invoke(paso);
         }
 
         public void ManejarFin(FinDTO fin)
