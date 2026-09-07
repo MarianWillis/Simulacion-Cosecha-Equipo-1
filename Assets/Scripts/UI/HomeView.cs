@@ -98,23 +98,32 @@ namespace FarmDashboard
 
         private void BuildConfigCard(Transform parent)
         {
-            var card = UIBuilder.Panel(parent, "ConfigCard", UITheme.PanelBg, UITheme.RadiusCard, exactWidth: 300, exactHeight: 450, borderColor: UITheme.PanelBorder);
+            var card = UIBuilder.Panel(parent, "ConfigCard", UITheme.PanelBg, UITheme.RadiusCard, exactWidth: 300, exactHeight: 820, borderColor: UITheme.PanelBorder);
             var col = UIBuilder.VCol(card, "Col", gap: 10, padding: new RectOffset(16, 16, 16, 16), controlWidth: true, controlHeight: true, forceExpand: true);
             col.anchorMin = Vector2.zero; col.anchorMax = Vector2.one; col.offsetMin = Vector2.zero; col.offsetMax = Vector2.zero;
             // card has no LayoutGroup of its own, so its reported height (when
             // unset) doesn't auto-detect from col's children -- it would fall
             // back to some small default, squishing everything inside. Explicit
-            // height matching the summed content (title + 4 inputs + divider +
+            // height matching the summed content (title + 10 inputs + divider +
             // 3 buttons + gaps + padding) instead.
-            UIBuilder.Flex(card, 0, 0, -1, 450, -1, 450);
+            UIBuilder.Flex(card, 0, 0, -1, 820, -1, 820);
 
             var title = UIBuilder.Text(col, "Title", "Configuración", UITheme.TypeRowLabel13, UIBuilder.Font(UITheme.FontPathBodyBold), UITheme.TextPrimary, TextAlignmentOptions.MidlineLeft);
             UIBuilder.Flex((RectTransform)title.transform, 1, 0, -1, 16, -1, 16);
 
+            // Same 10 parameters the old (already-working) input-fields panel
+            // sends via PanelControlSimulacion/ConexionSimulacion.EnviarReiniciar
+            // -- see Puente/MensajesDTO.cs ParametrosReinicioDTO.
             UIBuilder.NumberField(col, "Filas", "Filas", _state.Config.Rows, v => _state.Config.Rows = Mathf.Clamp(v, 3, 8));
             UIBuilder.NumberField(col, "Columnas", "Columnas", _state.Config.Cols, v => _state.Config.Cols = Mathf.Clamp(v, 3, 8));
-            UIBuilder.NumberField(col, "Tractores", "Tractores", _state.Config.Tractores, v => _state.Config.Tractores = Mathf.Clamp(v, 0, 4));
             UIBuilder.NumberField(col, "Cosechadores", "Cosechadores", _state.Config.Cosechadores, v => _state.Config.Cosechadores = Mathf.Clamp(v, 0, 4));
+            UIBuilder.NumberField(col, "Tractores", "Tractores", _state.Config.Tractores, v => _state.Config.Tractores = Mathf.Clamp(v, 0, 4));
+            UIBuilder.NumberField(col, "Pasos", "Pasos", _state.Config.Pasos, v => _state.Config.Pasos = Mathf.Max(v, 20));
+            UIBuilder.NumberField(col, "Semilla", "Semilla", _state.Config.Semilla, v => _state.Config.Semilla = v);
+            UIBuilder.NumberFieldFloat(col, "ProbDescompostura", "Probabilidad de Descompostura", _state.Config.ProbDescompostura, v => _state.Config.ProbDescompostura = Mathf.Clamp(v, 0f, 100f));
+            UIBuilder.NumberFieldFloat(col, "PctObstaculos", "Porcentaje de Obstaculos", _state.Config.PctObstaculos, v => _state.Config.PctObstaculos = Mathf.Clamp(v, 0f, 100f));
+            UIBuilder.NumberField(col, "CapacidadCosechador", "Capacidad de Cosechadora", _state.Config.CapacidadCosechador, v => _state.Config.CapacidadCosechador = Mathf.Max(v, 1));
+            UIBuilder.NumberField(col, "CapacidadTractor", "Capacidad de Tractor", _state.Config.CapacidadTractor, v => _state.Config.CapacidadTractor = Mathf.Max(v, 1));
 
             var divider = UIBuilder.Rect(col, "Divider", UITheme.DividerTrackBg);
             UIBuilder.Flex(divider, 1, 0, -1, 1, -1, 1);

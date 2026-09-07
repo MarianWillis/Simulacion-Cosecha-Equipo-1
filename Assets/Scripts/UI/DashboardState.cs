@@ -54,6 +54,13 @@ namespace FarmDashboard
         public int Tractores = 2;
         public int Pasos = 240;
         public int Semilla = 1337;
+
+        // Matches the rest of ParametrosReinicioDTO (Puente/MensajesDTO.cs) that
+        // the old input-fields panel already sent -- see PanelControlSimulacion.
+        public float PctObstaculos = 10f;
+        public int CapacidadCosechador = 50;
+        public int CapacidadTractor = 50;
+        public float ProbDescompostura = 2f;
     }
 
     // Mirrors the HTML prototype's `Component` state + tickSim()/renderVals() logic.

@@ -397,6 +397,27 @@ namespace FarmDashboard
         // gold on focus (the app's one interactive-state signature, per spec).
         public static TMP_InputField NumberField(Transform parent, string name, string label, int initialValue, System.Action<int> onChanged)
         {
+            var field = BuildLabeledField(parent, name, label, initialValue.ToString(), TMP_InputField.ContentType.IntegerNumber);
+            field.onEndEdit.AddListener(v =>
+            {
+                if (int.TryParse(v, out var iv)) onChanged?.Invoke(iv);
+            });
+            return field;
+        }
+
+        public static TMP_InputField NumberFieldFloat(Transform parent, string name, string label, float initialValue, System.Action<float> onChanged)
+        {
+            var field = BuildLabeledField(parent, name, label, initialValue.ToString(System.Globalization.CultureInfo.InvariantCulture), TMP_InputField.ContentType.DecimalNumber);
+            field.onEndEdit.AddListener(v =>
+            {
+                if (float.TryParse(v, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var fv))
+                    onChanged?.Invoke(fv);
+            });
+            return field;
+        }
+
+        private static TMP_InputField BuildLabeledField(Transform parent, string name, string label, string initialText, TMP_InputField.ContentType contentType)
+        {
             var host = VCol(parent, name, gap: 4, controlWidth: true, controlHeight: true, forceExpand: true);
             Flex(host, 1, 0, -1, 54, -1, 54);
 
@@ -421,8 +442,8 @@ namespace FarmDashboard
             var field = fieldHost.gameObject.AddComponent<TMP_InputField>();
             field.targetGraphic = fieldImg;
             field.textComponent = tmpText;
-            field.contentType = TMP_InputField.ContentType.IntegerNumber;
-            field.text = initialValue.ToString();
+            field.contentType = contentType;
+            field.text = initialText;
             field.transition = Selectable.Transition.None;
 
             var focus = fieldHost.gameObject.AddComponent<InputFocusBorder>();
@@ -430,11 +451,6 @@ namespace FarmDashboard
             focus.NormalColor = UITheme.DividerTrackBg;
             focus.FocusColor = UITheme.GoldBright;
             focus.Attach(field);
-
-            field.onEndEdit.AddListener(v =>
-            {
-                if (int.TryParse(v, out var iv)) onChanged?.Invoke(iv);
-            });
 
             return field;
         }

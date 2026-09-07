@@ -135,6 +135,10 @@ namespace FarmDashboard
                 shape: new[] { cfg.Rows, cfg.Cols },
                 nHarvesters: cfg.Cosechadores,
                 nTractores: cfg.Tractores,
+                pctObstaculos: cfg.PctObstaculos,
+                capacidadHarvester: cfg.CapacidadCosechador,
+                capacidadTractor: cfg.CapacidadTractor,
+                probDescompostura: cfg.ProbDescompostura,
                 seed: cfg.Semilla,
                 steps: cfg.Pasos);
         }
