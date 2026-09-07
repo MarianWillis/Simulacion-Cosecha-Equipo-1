@@ -146,7 +146,15 @@ namespace FarmDashboard
             UIBuilder.Flex((RectTransform)brandText.transform, 1, 1);
 
             // Right: 3 monospace pills.
-            var right = UIBuilder.HRow(row, "HeaderRight", gap: 14, controlWidth: false, controlHeight: true, align: TextAnchor.MiddleCenter);
+            // controlWidth must be true now that pills use explicit fixed
+            // LayoutElement widths (not ContentSizeFitter): false means "never
+            // apply the LayoutElement width to the RectTransform at all", which
+            // silently left every pill stuck at its default 100 width no matter
+            // what min/preferredWidth said -- confirmed via the Inspector (sprite
+            // baked correctly at 140x24, but the RectTransform itself read 100),
+            // which is exactly why the text (sized for 140) was overflowing a box
+            // that was actually only 100 wide.
+            var right = UIBuilder.HRow(row, "HeaderRight", gap: 14, controlWidth: true, controlHeight: true, align: TextAnchor.MiddleCenter);
             UIBuilder.Flex(right, 1, 1);
 
             BuildPill(right, "TurnoPill", 140, out _, out var turnoText);
