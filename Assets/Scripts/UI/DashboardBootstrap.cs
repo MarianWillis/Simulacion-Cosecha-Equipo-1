@@ -139,10 +139,12 @@ namespace FarmDashboard
 
         public void PauseRun()
         {
-            if (!_state.Running) return;
+            Debug.Log($"[Dashboard] PauseRun() llamado. _state.Running antes = {_state.Running}");
+            if (!_state.Running) { Debug.Log("[Dashboard] PauseRun() salió temprano porque Running ya era false."); return; }
             if (_state.UsingLiveData) _liveData.Pause();
             _state.Running = false;
             _shell.RefreshRunningControls();
+            Debug.Log($"[Dashboard] PauseRun() terminó. _state.Running ahora = {_state.Running}");
         }
 
         public void RestartRun()
