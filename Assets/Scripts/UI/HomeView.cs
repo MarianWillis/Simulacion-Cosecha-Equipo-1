@@ -190,11 +190,18 @@ namespace FarmDashboard
             scrollRect.horizontal = false;
             scrollRect.movementType = ScrollRect.MovementType.Clamped;
 
-            _fleetList = UIBuilder.VCol(scrollHost, "FleetList", gap: 10, controlWidth: true, controlHeight: false);
-            // Width must stretch-fill (rows span the list's full width) but height
-            // must NOT (rows keep their own fixed height) -- VCol's forceExpand
-            // bool controls both axes together, so set width-only directly here.
-            _fleetList.GetComponent<VerticalLayoutGroup>().childForceExpandWidth = true;
+            // controlHeight must be true here, not false: false doesn't mean
+            // "respect each row's own fixed height" (that was the wrong
+            // assumption) -- it means the group never applies a row's
+            // LayoutElement height to its RectTransform at all, leaving whatever
+            // tiny default size it had, which squished/overlapped each row's
+            // internal header/fuel/rounds lines. With controlHeight:true and
+            // forceExpandHeight left false (set below), each row gets clamped to
+            // exactly its own min/preferred height (84) instead.
+            _fleetList = UIBuilder.VCol(scrollHost, "FleetList", gap: 10, controlWidth: true, controlHeight: true);
+            var fleetListGroup = _fleetList.GetComponent<VerticalLayoutGroup>();
+            fleetListGroup.childForceExpandWidth = true;
+            fleetListGroup.childForceExpandHeight = false;
             _fleetList.anchorMin = new Vector2(0, 1);
             _fleetList.anchorMax = new Vector2(1, 1);
             _fleetList.pivot = new Vector2(0.5f, 1f);
