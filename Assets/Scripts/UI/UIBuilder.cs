@@ -454,6 +454,13 @@ namespace FarmDashboard
             field.contentType = contentType;
             field.text = initialText;
             field.transition = Selectable.Transition.None;
+            // TMP_InputField already blinks a caret by default, but it inherits
+            // the text color unless told otherwise -- make it gold and a touch
+            // wider so it's clearly visible against the dark field background.
+            field.customCaretColor = true;
+            field.caretColor = UITheme.GoldBright;
+            field.caretWidth = 2;
+            field.caretBlinkRate = 0.85f;
 
             var focus = fieldHost.gameObject.AddComponent<InputFocusBorder>();
             focus.Border = fieldImg;
