@@ -24,6 +24,9 @@ namespace FarmDashboard
         public int Col;
 
         public float Fuel = 100f;
+        public float FuelRaw;
+        public float FuelMax = 100f;
+        public int Capacity;
         public int Rounds;
         public int CosechadoTotal;
         public int Carga;
@@ -71,6 +74,13 @@ namespace FarmDashboard
     // require touching the view code that reads this state.
     public class DashboardState
     {
+        // Four horizontal bands used by the Cultivo page. Unity derives these
+        // from init.trigo_listo and paso.cosechadas; Python stays unchanged.
+        public readonly int[] CropZoneTotals = new int[4];
+        public readonly int[] CropZoneHarvested = new int[4];
+        // Changes on every init, including restarts whose fleet happens to have
+        // the same IDs/count. Views use it to discard UI from the previous run.
+        public int SimulationGeneration;
         public DashScreen Screen = DashScreen.Intro;
         public bool IntroFading;
         public SimConfig Config = new();

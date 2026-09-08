@@ -19,6 +19,7 @@ namespace FarmDashboard
         private TextMeshProUGUI _placeholderText;
         private RectTransform _placeholderRoot;
         private HomeView _homeView;
+        private OperationsSectionView _operationsView;
 
         public void Init(DashboardState state, string brandName, DashboardBootstrap bootstrap)
         {
@@ -81,6 +82,12 @@ namespace FarmDashboard
             UIBuilder.Flex((RectTransform)homeGo.transform, 1, 1);
             _homeView = homeGo.AddComponent<HomeView>();
             _homeView.Init(_state, bootstrap);
+
+            var operationsGo = new GameObject("OperationsSectionView", typeof(RectTransform));
+            operationsGo.transform.SetParent(ContentArea, false);
+            UIBuilder.Flex((RectTransform)operationsGo.transform, 1, 1);
+            _operationsView = operationsGo.AddComponent<OperationsSectionView>();
+            _operationsView.Init(_state);
 
             _state.Changed += RefreshAll;
             RefreshAll();
@@ -323,9 +330,13 @@ namespace FarmDashboard
             }
 
             bool isHome = _state.View == DashView.Home;
-            _placeholderRoot.gameObject.SetActive(!isHome);
+            bool isOperations = _state.View == DashView.Combustible || _state.View == DashView.Cultivo ||
+                                _state.View == DashView.Tractores || _state.View == DashView.Cosechadoras;
+            _placeholderRoot.gameObject.SetActive(!isHome && !isOperations);
             _homeView.gameObject.SetActive(isHome);
-            if (!isHome && _placeholderText != null)
+            _operationsView.gameObject.SetActive(isOperations);
+            if (isOperations) _operationsView.Show(_state.View);
+            if (!isHome && !isOperations && _placeholderText != null)
                 _placeholderText.text = ViewLabel(_state.View) + "\n(vista en construcción -- próxima entrega)";
         }
 

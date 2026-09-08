@@ -57,28 +57,56 @@ namespace FarmDashboard
 
         private void OnInit(InitDTO init)
         {
+            _userPaused = false;
+            _state.Running = true;
+            _state.SimulationGeneration++;
             _state.Config.Rows = init.filas;
             _state.Config.Cols = init.columnas;
+            _state.Config.Cosechadores = init.harvesters?.Count ?? 0;
+            _state.Config.Tractores = init.tractores?.Count ?? 0;
+            if (init.harvesters != null && init.harvesters.Count > 0)
+                _state.Config.CapacidadCosechador = init.harvesters[0].capacidad;
+            if (init.tractores != null && init.tractores.Count > 0)
+                _state.Config.CapacidadTractor = init.tractores[0].capacidad;
+            System.Array.Clear(_state.CropZoneTotals, 0, _state.CropZoneTotals.Length);
+            System.Array.Clear(_state.CropZoneHarvested, 0, _state.CropZoneHarvested.Length);
+            _state.CosechadoPctServer = 0f;
+            _state.GranoEntregado = 0;
+            _state.RecargasTotales = 0;
+            _state.DistanciaTotalServer = 0;
+            _state.DescomposturasTotales = 0;
+            if (init.trigo_listo != null)
+                foreach (var cell in init.trigo_listo)
+                    _state.CropZoneTotals[CropZone(cell[0], init.filas)]++;
 
             _state.Vehicles.Clear();
-            foreach (var h in init.harvesters) _state.Vehicles.Add(BuildVehicle(h));
-            foreach (var t in init.tractores) _state.Vehicles.Add(BuildVehicle(t));
+            if (init.harvesters != null)
+                for (int i = 0; i < init.harvesters.Count; i++)
+                    _state.Vehicles.Add(BuildVehicle(init.harvesters[i], i + 1));
+            if (init.tractores != null)
+                for (int i = 0; i < init.tractores.Count; i++)
+                    _state.Vehicles.Add(BuildVehicle(init.tractores[i], i + 1));
 
             _state.Tick = 0;
             _state.NotifyChanged();
         }
 
-        private static VehicleData BuildVehicle(AgenteInitDTO a)
+        private static VehicleData BuildVehicle(AgenteInitDTO a, int displayNumber)
         {
             bool esHarvester = a.clase == "harvester";
             return new VehicleData
             {
                 Id = $"{a.clase}-{a.id}",
                 Type = esHarvester ? VehicleType.Cosechador : VehicleType.Tractor,
-                Label = (esHarvester ? "Cosechador " : "Tractor ") + a.id,
+                // Keep the Python ID in Id for matching future paso messages,
+                // but show people a simple 1..N number within each vehicle type.
+                Label = (esHarvester ? "Cosechador " : "Tractor ") + displayNumber,
                 Fila = a.fila,
                 Col = a.col,
                 Fuel = 100f,
+                FuelRaw = a.gasolina_max,
+                FuelMax = a.gasolina_max,
+                Capacity = a.capacidad,
                 Status = VehicleStatus.Activo,
             };
         }
@@ -104,12 +132,17 @@ namespace FarmDashboard
                 }
                 v.Fila = a.fila;
                 v.Col = a.col;
-                v.Fuel = a.gasolina;
+                v.FuelRaw = a.gasolina;
+                v.Fuel = v.FuelMax > 0f ? Mathf.Clamp01(a.gasolina / v.FuelMax) * 100f : 0f;
                 v.Carga = a.carga;
                 v.CosechadoTotal = a.cosechado_total;
                 v.EstadoRaw = a.estado;
                 v.Status = MapEstado(a.estado);
             }
+
+            if (paso.cosechadas != null)
+                foreach (var cell in paso.cosechadas)
+                    _state.CropZoneHarvested[CropZone(cell[0], _state.Config.Rows)]++;
 
             if (paso.metricas != null)
             {
@@ -121,6 +154,12 @@ namespace FarmDashboard
             }
 
             _state.NotifyChanged();
+        }
+
+        private static int CropZone(int row, int rows)
+        {
+            if (rows <= 0) return 0;
+            return Mathf.Clamp(row * 4 / rows, 0, 3);
         }
 
         private static VehicleStatus MapEstado(string raw)
