@@ -7,8 +7,9 @@ namespace Puente
     /// <summary>
     /// Traduce los mensajes del puente (init/paso/fin) a objetos de escena:
     /// instancia el terreno (obstaculos, trigo, silo, base) una vez con
-    /// "init", y en cada "paso" mueve agentes existentes y apaga el trigo
-    /// recien cosechado. No hay logica de simulacion aca: todo el estado
+    /// "init", y en cada "paso" mueve agentes existentes y reemplaza el
+    /// trigo recien cosechado por prefabTrigoCosechado. No hay logica de
+    /// simulacion aca: todo el estado
     /// (gasolina, rutas, colisiones) vive en granja.py.
     /// </summary>
     public class GestorSimulacion : MonoBehaviour
@@ -22,6 +23,7 @@ namespace Puente
         [Header("Prefabs de terreno")]
         [SerializeField] private GameObject prefabCamino;
         [SerializeField] private GameObject prefabTrigo;
+        [SerializeField] private GameObject prefabTrigoCosechado;
         [SerializeField] private GameObject prefabObstaculoRoca;   // tipo_visual 0
         [SerializeField] private GameObject prefabObstaculoPoste;  // tipo_visual 1
         [SerializeField] private GameObject prefabSilo;
@@ -186,8 +188,21 @@ namespace Puente
 
             foreach (var celda in paso.cosechadas)
             {
-                if (trigoPorCelda.TryGetValue((celda[0], celda[1]), out var trigo) && trigo != null)
-                    trigo.SetActive(false);
+                var clave = (celda[0], celda[1]);
+                if (trigoPorCelda.TryGetValue(clave, out var trigo) && trigo != null)
+                {
+                    if (prefabTrigoCosechado != null)
+                    {
+                        var reemplazo = Instantiate(prefabTrigoCosechado, trigo.transform.position,
+                            trigo.transform.rotation, transform);
+                        trigoPorCelda[clave] = reemplazo;
+                        Destroy(trigo);
+                    }
+                    else
+                    {
+                        trigo.SetActive(false);
+                    }
+                }
             }
 
             UltimasMetricas = paso.metricas;

@@ -1392,6 +1392,7 @@ MonoBehaviour:
   prefabHarvester: {fileID: 5385747586581779590, guid: 3ec7f45cc73565549974d30e2933875b, type: 3}
   prefabTractor: {fileID: 3250739375635557877, guid: d6164e453beedc44b8eecd07ae1d7d51, type: 3}
   prefabTrigo: {fileID: 5781683222073939735, guid: 56efacde4e849bb479da0775be05d23f, type: 3}
+  prefabTrigoCosechado: {fileID: 5781683222073939735, guid: 369abf345764aca488f8c5d8364e1144, type: 3}
   prefabObstaculoRoca: {fileID: 2658360238327246033, guid: ed157de0c41a3f541b505a2ab8605cb1, type: 3}
   prefabObstaculoPoste: {fileID: 7550840344629051563, guid: 8e31931fc5c49394fa635facecaec5fa, type: 3}
   prefabSilo: {fileID: 2045299841843087304, guid: 23e517c5fbd55d34e873e55bd83c6c8b, type: 3}
