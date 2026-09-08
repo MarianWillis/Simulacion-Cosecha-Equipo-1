@@ -29,7 +29,6 @@ namespace FarmDashboard
         private void Awake()
         {
             _state = new DashboardState();
-            _state.Config.Pasos = 240;
 
             BuildCanvas();
             BuildEventSystem();
