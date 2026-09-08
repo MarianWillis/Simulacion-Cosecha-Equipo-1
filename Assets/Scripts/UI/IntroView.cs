@@ -122,7 +122,7 @@ namespace FarmDashboard
             var host = UIBuilder.NewRect(parent, "SubtitleHost");
             UIBuilder.Flex(host, 1, 0, 0, 18, -1, 18);
             var cg = host.gameObject.AddComponent<CanvasGroup>();
-            var txt = UIBuilder.Text(host, "Subtitle", "OPERATIONS CENTER", UITheme.TypeBody12 + 1, UIBuilder.Font(UITheme.FontPathBodySemiBold), UITheme.TextMuted1, TextAlignmentOptions.Center);
+            var txt = UIBuilder.Text(host, "Subtitle", "CENTRO DE OPERACIONES", UITheme.TypeBody12 + 1, UIBuilder.Font(UITheme.FontPathBodySemiBold), UITheme.TextMuted1, TextAlignmentOptions.Center);
             txt.characterSpacing = 8f;
             ((RectTransform)txt.transform).anchorMin = Vector2.zero;
             ((RectTransform)txt.transform).anchorMax = Vector2.one;
@@ -140,7 +140,7 @@ namespace FarmDashboard
             host.sizeDelta = new Vector2(300, 18);
             host.anchoredPosition = new Vector2(0, 32);
             var cg = host.gameObject.AddComponent<CanvasGroup>();
-            var txt = UIBuilder.Text(host, "Hint", "Click para continuar", UITheme.TypeBody12, UIBuilder.Font(UITheme.FontPathBodyRegular), UITheme.MidGray, TextAlignmentOptions.Center);
+            var txt = UIBuilder.Text(host, "Hint", "Clic para continuar", UITheme.TypeBody12, UIBuilder.Font(UITheme.FontPathBodyRegular), UITheme.MidGray, TextAlignmentOptions.Center);
             ((RectTransform)txt.transform).anchorMin = Vector2.zero;
             ((RectTransform)txt.transform).anchorMax = Vector2.one;
             ((RectTransform)txt.transform).offsetMin = Vector2.zero;

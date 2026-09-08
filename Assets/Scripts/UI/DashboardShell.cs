@@ -152,7 +152,7 @@ namespace FarmDashboard
             // itself a HorizontalLayoutGroup, and leaving its width unset (-1)
             // hits the exact same nested-LayoutGroup mis-sizing bug regardless of
             // whether the nesting is same-axis or cross-axis. 420 comfortably
-            // fits "OPERATIONS SYSTEM | Granja TEC" (260 was just too narrow).
+            // fits "SISTEMA DE OPERACIONES | Granja TEC" (260 was just too narrow).
             UIBuilder.Flex(left, 0, 1, 420, -1, 420, -1);
             var logoTile = UIBuilder.Panel(left, "LogoTile", UITheme.ChipBg, 7, exactWidth: 28, exactHeight: 28);
             UIBuilder.Flex(logoTile, 0, 0, 28, 28, 28, 28);
@@ -172,7 +172,7 @@ namespace FarmDashboard
             var wordmarkRow = UIBuilder.HRow(left, "Wordmark", gap: 6, controlWidth: true, controlHeight: true, align: TextAnchor.MiddleLeft);
             UIBuilder.Flex(wordmarkRow, 1, 1);
 
-            var opsText = UIBuilder.Text(wordmarkRow, "OpsSystem", "OPERATIONS SYSTEM", UITheme.TypeWordmark15,
+            var opsText = UIBuilder.Text(wordmarkRow, "OpsSystem", "SISTEMA DE OPERACIONES", UITheme.TypeWordmark15,
                 UIBuilder.Font(UITheme.FontPathDisplay), UITheme.TextPrimary, TextAlignmentOptions.MidlineLeft);
             UIBuilder.Flex((RectTransform)opsText.transform, 0, 1);
 
@@ -295,7 +295,7 @@ namespace FarmDashboard
             // Each button's icon badge gets its own accent color (matching the
             // reference design) with a dark glyph on top -- only Home keeps the
             // flat ChipBg tile, since its "icon" IS the 2x2 color grid itself.
-            AddNavButton(sidebar, DashView.Home, "Home", UITheme.ChipBg, host => BuildMiniLogoGrid(host), isHomeButton: true);
+            AddNavButton(sidebar, DashView.Home, "Inicio", UITheme.ChipBg, host => BuildMiniLogoGrid(host), isHomeButton: true);
             AddNavButton(sidebar, DashView.Camaras, "Cámaras", UITheme.NearWhiteMarker, host => IconFactory.Camera(host, UITheme.BgBase, UITheme.TextMuted2));
             AddNavButton(sidebar, DashView.Combustible, "Combustible", UITheme.GoldAccent, host => IconFactory.FuelDrop(host, UITheme.BgBase));
             AddNavButton(sidebar, DashView.Cultivo, "Cultivo", UITheme.BrownAccent, host => IconFactory.CultivoDot(host, UITheme.BgBase));
@@ -348,7 +348,7 @@ namespace FarmDashboard
 
         private void RefreshAll()
         {
-            _tickText.text = $"Tick {_state.Tick:D4} / {_state.Config.Pasos}";
+            _tickText.text = $"Paso {_state.Tick:D4} / {_state.Config.Pasos}";
             _statusLabel.text = _state.Running ? "En vivo" : "Pausado";
             var statusColor = _state.Running ? UITheme.GreenPrimary : UITheme.MidGray;
             _statusDot.color = statusColor;
@@ -380,7 +380,7 @@ namespace FarmDashboard
 
         private static string ViewLabel(DashView v) => v switch
         {
-            DashView.Home => "Home",
+            DashView.Home => "Inicio",
             DashView.Camaras => "Cámaras",
             DashView.Combustible => "Combustible",
             DashView.Cultivo => "Cultivo",

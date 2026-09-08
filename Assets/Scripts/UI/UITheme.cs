@@ -43,6 +43,37 @@ namespace FarmDashboard
 
         public static readonly Color OutlineButtonBorder = Hex("#4a4838");
 
+        // --- Tarjeta "Configuracion" -------------------------------------
+        //
+        // Misma paleta oscura que el resto del dashboard. Viven aparte y no
+        // se usan los tokens generales directo porque esta es la unica
+        // tarjeta con la que se INTERACTUA (leer el nombre de un parametro,
+        // escribir un numero) y su legibilidad se ajusta sola: la etiqueta
+        // usa el gris CLARO, no el gris apagado de las leyendas decorativas
+        // del resto de la UI.
+        //
+        // Contrastes contra WCAG AA (4.5:1 minimo para texto): etiqueta
+        // 11.4:1, numero 13.9:1. Si se tocan estos hex, hay que volver a
+        // medirlos -- es el punto entero del bloque. La otra mitad de la
+        // legibilidad es el tamano, en TypeConfigLabel15/TypeConfigValue20.
+        public static readonly Color ConfigPanelBg = PanelBg;
+        public static readonly Color ConfigPanelBorder = PanelBorder;
+        public static readonly Color ConfigFieldBg = ChipBg;
+        public static readonly Color ConfigFieldBorder = DividerTrackBg;
+        public static readonly Color ConfigTextPrimary = TextPrimary;
+        // #cfcec7 y no el #73726b de las leyendas: ese se queda en 3.7:1
+        // sobre el panel, por debajo del minimo.
+        public static readonly Color ConfigTextLabel = LightGrayText;
+        public static readonly Color ConfigDivider = DividerTrackBg;
+        public static readonly Color ConfigFocusRing = GoldBright;
+        public static readonly Color ConfigNeutralBtnBg = DividerTrackBg;
+        public static readonly Color ConfigNeutralBtnHover = Hex("#3a3826");
+        public static readonly Color ConfigOutlineBtnBg = ChipBg;
+        public static readonly Color ConfigOutlineBtnHover = DividerTrackBg;
+        public static readonly Color ConfigBtnText = LightGrayText;
+        public static readonly Color ConfigDisabledBtnBg = ChipBg;
+        public static readonly Color ConfigDisabledBtnText = MidGray;
+
         // Marker colors (intentionally: tractor = gold, cosechador = green,
         // opposite of the sidebar icon dot colors -- called out in the README).
         public static readonly Color TractorMarker = GoldAccent;
@@ -95,6 +126,13 @@ namespace FarmDashboard
         public const float TypeBody12 = 12f;
         public const float TypeStatusButton11 = 11f;
         public const float TypeCaption10 = 10f;
+
+        // Escala propia de la tarjeta "Configuracion", subida a proposito
+        // respecto al resto del dashboard (ver el bloque de tokens de arriba):
+        // la etiqueta pasa de 10 a 15 y el numero de 12 a 20.
+        public const float TypeConfigLabel15 = 15f;
+        public const float TypeConfigValue20 = 20f;
+        public const float TypeConfigButton13 = 13f;
 
         private static Color Hex(string hex, float alphaOverride = 1f)
         {
