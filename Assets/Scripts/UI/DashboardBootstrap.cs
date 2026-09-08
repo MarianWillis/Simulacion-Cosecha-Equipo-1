@@ -16,6 +16,10 @@ namespace FarmDashboard
         [Range(300, 1500)] public float tickSpeedMs = 700f;
         public bool autoPlayOnLoad = false;
 
+        [Header("Camara en vivo (tarjeta 'Vista general')")]
+        [Tooltip("Render Texture asignada como Target Texture de la camara que quieras mostrar en la tarjeta 'Vista general' del Home (ej. la Main Camera).")]
+        public RenderTexture texturaVistaGeneral;
+
         private DashboardState _state;
         private RectTransform _canvasRoot;
         private DashboardShell _shell;
@@ -48,6 +52,16 @@ namespace FarmDashboard
             _shell.Init(_state, brandName, this);
             shellGo.SetActive(false);
 
+            // El slot "general" ya existe en este punto (creado dentro de
+            // _shell.Init -> HomeView.BuildCameraCard). Si se asigno una
+            // Render Texture en el Inspector, la conectamos aca para que la
+            // tarjeta "Vista general" muestre esa camara en vivo.
+            if (texturaVistaGeneral != null)
+            {
+                var slotVistaGeneral = CameraFeedSlot.Find("general");
+                if (slotVistaGeneral != null) slotVistaGeneral.SetFeed(texturaVistaGeneral);
+            }
+
             BuildIntro();
 
             _state.RebuildVehicles();
@@ -57,6 +71,20 @@ namespace FarmDashboard
             // Update() below stops running the demo tick. See SimulationDataAdapter.
             _liveData = gameObject.AddComponent<SimulationDataAdapter>();
             _liveData.Init(_state);
+
+            // Camaras de la vista Cultivo (una por zona). Se agrega aca, no
+            // en la escena, para que no haya nada que arrastrar a mano: sus
+            // Start() corren despues de este Awake, cuando los slots
+            // "zona-N" ya existen (los crea CultivoCamarasView, mas arriba).
+            gameObject.AddComponent<CamarasZonasCultivo>();
+
+            // Idem para los cuatro angulos de la pestana Camaras (slots
+            // "angulo-N", creados por CamarasView dentro de _shell.Init).
+            gameObject.AddComponent<CamarasAngulos>();
+
+            // Y para el slot "seguimiento" de Combustible/Tractores/
+            // Cosechadoras (creado por SeguimientoVehiculoView).
+            gameObject.AddComponent<CamaraSeguimientoVehiculo>().Init(_state);
 
             if (autoPlayOnLoad) StartRun();
         }

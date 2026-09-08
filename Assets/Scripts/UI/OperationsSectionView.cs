@@ -14,6 +14,11 @@ namespace FarmDashboard
             public string Id;
             public TextMeshProUGUI Status, FuelText, Position, Load, Extra;
             public UIBuilder.ProgressBarHandle FuelBar;
+            // Para marcar cual esta seleccionada (la que sigue la camara de
+            // la derecha, ver SeguimientoVehiculoView).
+            public ButtonHoverColor Hover;
+            public RectTransform Accent;
+            public TextMeshProUGUI Label;
         }
 
         private sealed class ZoneRow
@@ -39,9 +44,9 @@ namespace FarmDashboard
             // the individual information cards keep their rounded shapes.
             var panel = UIBuilder.Rect(transform, "LeftPanel", UITheme.PanelBg);
             panel.anchorMin = new Vector2(0f, 0f);
-            panel.anchorMax = new Vector2(0.50f, 1f);
+            panel.anchorMax = new Vector2(UITheme.SplitPanelInfo, 1f);
             panel.offsetMin = Vector2.zero;
-            panel.offsetMax = new Vector2(-10f, 0f);
+            panel.offsetMax = new Vector2(-UITheme.SplitSeparacion, 0f);
 
             _title = Text(panel, "Title", "", UITheme.TypeDisplay38,
                 UITheme.FontPathDisplay, UITheme.TextPrimary, 20, -76, -20, -18);
@@ -137,6 +142,32 @@ namespace FarmDashboard
             var card = UIBuilder.Panel(_list, "Row_" + vehicle.Id, UITheme.CardBgNested,
                 UITheme.RadiusRow, exactWidth: 620, exactHeight: height);
             UIBuilder.Flex(card, 1, 0, -1, height, -1, height);
+
+            // La tarjeta entera es el boton que elige a quien sigue la camara.
+            // Los textos de adentro son raycast targets, pero el click burbujea
+            // hasta este Button igual (asi funciona el EventSystem), asi que no
+            // hay que apagarles el raycast uno por uno.
+            var cardImage = card.GetComponent<Image>();
+            var boton = card.gameObject.AddComponent<Button>();
+            boton.targetGraphic = cardImage;
+            boton.transition = Selectable.Transition.None; // lo pinta ButtonHoverColor
+            var hover = card.gameObject.AddComponent<ButtonHoverColor>();
+            hover.Image = cardImage;
+            hover.NormalColor = UITheme.CardBgNested;
+            hover.HoverColor = UITheme.ChipBg;
+            string id = vehicle.Id;
+            boton.onClick.AddListener(() => _state.SelectVehicle(id));
+
+            // Barra verde a la izquierda: se prende solo en la seleccionada.
+            var accent = UIBuilder.Rect(card, "Accent", UITheme.GreenPrimary);
+            accent.anchorMin = new Vector2(0f, 0f);
+            accent.anchorMax = new Vector2(0f, 1f);
+            accent.pivot = new Vector2(0f, 0.5f);
+            accent.offsetMin = new Vector2(0f, 10f);
+            accent.offsetMax = new Vector2(3f, -10f);
+            accent.GetComponent<Image>().raycastTarget = false;
+            accent.gameObject.SetActive(false);
+
             var col = UIBuilder.VCol(card, "Col", gap: 7,
                 padding: new RectOffset(14, 14, 12, 12), controlWidth: true, controlHeight: true);
             Stretch(col);
@@ -163,7 +194,10 @@ namespace FarmDashboard
                 Id = vehicle.Id,
                 Status = status,
                 FuelText = fuelText,
-                FuelBar = fuelBar
+                FuelBar = fuelBar,
+                Hover = hover,
+                Accent = accent,
+                Label = label,
             };
 
             if (!compact)
@@ -210,7 +244,7 @@ namespace FarmDashboard
             _subtitle.text = view switch
             {
                 DashView.Combustible => "Nivel actual de combustible por tractor y cosechadora.",
-                DashView.Cultivo => "Progreso por cuatro zonas del campo, calculado con las celdas cosechadas.",
+                DashView.Cultivo => "Progreso por los cuatro cuadrantes del campo, calculado con las celdas cosechadas.",
                 DashView.Tractores => "Vista comparativa del estado actual de cada tractor.",
                 DashView.Cosechadoras => "Vista comparativa del estado actual de cada cosechadora.",
                 _ => ""
@@ -235,10 +269,23 @@ namespace FarmDashboard
                 return;
             }
 
+            var seguido = _state.VehiculoSeguido();
             foreach (var row in _vehicleRows)
             {
                 var vehicle = _state.FindVehicle(row.Id);
                 if (vehicle == null) continue;
+
+                // Marca de seleccion: base mas clara + barra verde. El color
+                // va por SetBaseColor y no por Image.color, si no el hover se
+                // lo pisa al primer movimiento del mouse.
+                bool marcada = seguido != null && seguido.Id == row.Id;
+                if (row.Hover != null)
+                    row.Hover.SetBaseColor(marcada ? UITheme.ChipBg : UITheme.CardBgNested);
+                if (row.Accent != null && row.Accent.gameObject.activeSelf != marcada)
+                    row.Accent.gameObject.SetActive(marcada);
+                if (row.Label != null)
+                    row.Label.color = marcada ? UITheme.TextPrimary : UITheme.LightGrayText;
+
                 float fuelPct = vehicle.Fuel;
                 row.FuelText.text = $"{fuelPct:0.#}%  ·  {vehicle.FuelRaw:0.#}/{vehicle.FuelMax:0.#} u.";
                 row.FuelBar.SetPercent(fuelPct, fuelPct <= 20 ? UITheme.StatusRed : UITheme.GreenPrimary);

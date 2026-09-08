@@ -40,6 +40,11 @@ namespace Puente
 
         public MetricasDTO UltimasMetricas { get; private set; }
 
+        // Expuesto para EncuadreCamaraGranja: necesita el mismo factor de
+        // escala que usa CeldaAMundo para calcular donde cae cada esquina
+        // del campo en unidades de mundo.
+        public float TamCelda => tamCelda;
+
         // Hooks de solo-lectura para el dashboard de UI (Assets/Scripts/UI):
         // se disparan al final de ManejarInit/ManejarPaso sin cambiar nada de
         // la logica de esta clase. GestorSimulacion no conoce ni depende del
@@ -52,10 +57,19 @@ namespace Puente
             Instancia = this;
         }
 
-        private Vector3 CeldaAMundo(int fila, int col)
+        // Publico para las camaras del dashboard (CamarasAngulos): necesitan
+        // saber donde cae el silo/la base en unidades de mundo, y esa cuenta
+        // tiene que salir de aca para no duplicar el mapeo fila->Z, col->X.
+        public Vector3 CeldaAMundo(int fila, int col)
         {
             return new Vector3(col * tamCelda, 0f, fila * tamCelda);
         }
+
+        // Transform vivo de un agente ya instanciado, o null si todavia no
+        // existe (o si el ultimo "init" lo quito). Solo lectura: quien lo
+        // pida NO debe moverlo -- de eso se encarga ManejarPaso.
+        public Transform BuscarAgente(string clase, int id) =>
+            agentes.TryGetValue((ClaseId(clase), id), out var t) ? t : null;
 
         private static int ClaseId(string clase) => clase == "harvester" ? 0 : 1;
 
@@ -65,6 +79,11 @@ namespace Puente
             // Inspector): a granja.py no le importa cuantas unidades de
             // Unity mide una celda, asi que el init.tam_celda del mensaje
             // no se usa aca.
+
+            Debug.Log($"[Puente] Init recibido: grid={init.filas}x{init.columnas} " +
+                $"harvesters={init.harvesters?.Count ?? 0} tractores={init.tractores?.Count ?? 0} " +
+                $"obstaculos={init.obstaculos?.Count ?? 0} trigo_listo={init.trigo_listo?.Count ?? 0} " +
+                $"camino={init.camino?.Count ?? 0}");
 
             // Un "init" puede llegar mas de una vez: el puente manda otro
             // cada vez que Unity pide "reiniciar" con parametros nuevos

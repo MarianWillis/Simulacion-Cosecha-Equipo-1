@@ -143,8 +143,12 @@ namespace FarmDashboard
             // Same 10 parameters the old (already-working) input-fields panel
             // sends via PanelControlSimulacion/ConexionSimulacion.EnviarReiniciar
             // -- see Puente/MensajesDTO.cs ParametrosReinicioDTO.
-            _rowsField = UIBuilder.NumberField(col, "Filas", "Filas", _state.Config.Rows, v => _state.Config.Rows = Mathf.Clamp(v, 3, 8));
-            _colsField = UIBuilder.NumberField(col, "Columnas", "Columnas", _state.Config.Cols, v => _state.Config.Cols = Mathf.Clamp(v, 3, 8));
+            // Antes limitado a 3-8: resabio de un demo chico que ya no aplica
+            // -- confirmado que un grid 30x30 funciona bien. El techo real lo
+            // pone granja.py (manda "error" si los parametros no sirven, ver
+            // ConexionSimulacion.ProcesarMensaje), no un numero fijo aca.
+            _rowsField = UIBuilder.NumberField(col, "Filas", "Filas", _state.Config.Rows, v => _state.Config.Rows = Mathf.Clamp(v, 3, 60));
+            _colsField = UIBuilder.NumberField(col, "Columnas", "Columnas", _state.Config.Cols, v => _state.Config.Cols = Mathf.Clamp(v, 3, 60));
             _harvestersField = UIBuilder.NumberField(col, "Cosechadores", "Cosechadores", _state.Config.Cosechadores, v => _state.Config.Cosechadores = Mathf.Clamp(v, 0, 4));
             _tractorsField = UIBuilder.NumberField(col, "Tractores", "Tractores", _state.Config.Tractores, v => _state.Config.Tractores = Mathf.Clamp(v, 0, 4));
             UIBuilder.NumberField(col, "Pasos", "Pasos", _state.Config.Pasos, v => _state.Config.Pasos = Mathf.Max(v, 20));

@@ -21,6 +21,7 @@ namespace FarmDashboard
 
         public string SlotName { get; private set; }
         public RawImage Image { get; private set; }
+        public AspectRatioFitter Fitter { get; private set; }
 
         public static CameraFeedSlot Create(Transform parent, string slotName, Color fallbackColor)
         {
@@ -39,6 +40,21 @@ namespace FarmDashboard
         {
             Image.texture = texture;
             Image.color = Color.white; // let the texture's own colors show through
+        }
+
+        // Ajusta la imagen al aspecto REAL de lo que enfoca la camara y la
+        // mete dentro del hueco de la tarjeta (FitInParent, con barras al
+        // lado o arriba/abajo si sobra espacio). Sin esto el RawImage estira
+        // la RenderTexture hasta llenar el hueco y la escena se ve deformada.
+        public void SetAspect(float aspect)
+        {
+            if (aspect <= 0f || float.IsNaN(aspect) || float.IsInfinity(aspect)) return;
+            if (Fitter == null)
+            {
+                Fitter = gameObject.AddComponent<AspectRatioFitter>();
+                Fitter.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
+            }
+            Fitter.aspectRatio = aspect;
         }
 
         public static CameraFeedSlot Find(string slotName) =>
