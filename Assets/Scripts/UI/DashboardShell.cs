@@ -19,6 +19,10 @@ namespace FarmDashboard
         private TextMeshProUGUI _placeholderText;
         private RectTransform _placeholderRoot;
         private HomeView _homeView;
+        private OperationsSectionView _operationsView;
+        private CultivoCamarasView _cultivoCamarasView;
+        private CamarasView _camarasView;
+        private SeguimientoVehiculoView _seguimientoView;
 
         public void Init(DashboardState state, string brandName, DashboardBootstrap bootstrap)
         {
@@ -81,6 +85,41 @@ namespace FarmDashboard
             UIBuilder.Flex((RectTransform)homeGo.transform, 1, 1);
             _homeView = homeGo.AddComponent<HomeView>();
             _homeView.Init(_state, bootstrap);
+
+            var operationsGo = new GameObject("OperationsSectionView", typeof(RectTransform));
+            operationsGo.transform.SetParent(ContentArea, false);
+            UIBuilder.Flex((RectTransform)operationsGo.transform, 1, 1);
+            _operationsView = operationsGo.AddComponent<OperationsSectionView>();
+            _operationsView.Init(_state);
+
+            // Mitad derecha de Cultivo: las 4 camaras por zona.
+            // OperationsSectionView solo ocupa la mitad izquierda.
+            var cultivoCamarasGo = new GameObject("CultivoCamarasView", typeof(RectTransform));
+            cultivoCamarasGo.transform.SetParent(ContentArea, false);
+            // SIN UIBuilder.Flex a proposito: esta vista se sale del reparto
+            // del HorizontalLayoutGroup (se encima al ContentArea completo,
+            // ver CultivoCamarasView.Init). Un LayoutElement con
+            // ignoreLayout=false aca ganaria: el grupo incluye al hijo si
+            // CUALQUIER LayoutElement suyo tiene ignoreLayout=false, asi que
+            // agregar Flex volveria a meterla al reparto y las dos vistas se
+            // quedarian con un cuarto de pantalla cada una (el hueco enorme
+            // en medio).
+            _cultivoCamarasView = cultivoCamarasGo.AddComponent<CultivoCamarasView>();
+            _cultivoCamarasView.Init(_state);
+
+            // Mitad derecha de Combustible/Tractores/Cosechadoras: camara que
+            // sigue al vehiculo marcado en la lista de la izquierda.
+            var seguimientoGo = new GameObject("SeguimientoVehiculoView", typeof(RectTransform));
+            seguimientoGo.transform.SetParent(ContentArea, false);
+            _seguimientoView = seguimientoGo.AddComponent<SeguimientoVehiculoView>();
+            _seguimientoView.Init(_state);
+
+            // Pestana Camaras: cuatro angulos cercanos, a pantalla completa.
+            var camarasGo = new GameObject("CamarasView", typeof(RectTransform));
+            camarasGo.transform.SetParent(ContentArea, false);
+            UIBuilder.Flex((RectTransform)camarasGo.transform, 1, 1);
+            _camarasView = camarasGo.AddComponent<CamarasView>();
+            _camarasView.Init(_state);
 
             _state.Changed += RefreshAll;
             RefreshAll();
@@ -323,9 +362,19 @@ namespace FarmDashboard
             }
 
             bool isHome = _state.View == DashView.Home;
-            _placeholderRoot.gameObject.SetActive(!isHome);
+            bool isCamaras = _state.View == DashView.Camaras;
+            bool isOperations = _state.View == DashView.Combustible || _state.View == DashView.Cultivo ||
+                                _state.View == DashView.Tractores || _state.View == DashView.Cosechadoras;
+            _placeholderRoot.gameObject.SetActive(!isHome && !isCamaras && !isOperations);
             _homeView.gameObject.SetActive(isHome);
-            if (!isHome && _placeholderText != null)
+            _camarasView.gameObject.SetActive(isCamaras);
+            _operationsView.gameObject.SetActive(isOperations);
+            if (isOperations) _operationsView.Show(_state.View);
+            _cultivoCamarasView.gameObject.SetActive(_state.View == DashView.Cultivo);
+            // Cultivo ya usa la mitad derecha para sus camaras por zona; las
+            // otras tres vistas de operacion la usan para el seguimiento.
+            _seguimientoView.gameObject.SetActive(isOperations && _state.View != DashView.Cultivo);
+            if (!isHome && !isCamaras && !isOperations && _placeholderText != null)
                 _placeholderText.text = ViewLabel(_state.View) + "\n(vista en construcción -- próxima entrega)";
         }
 

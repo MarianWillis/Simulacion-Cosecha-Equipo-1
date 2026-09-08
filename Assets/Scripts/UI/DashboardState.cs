@@ -24,6 +24,9 @@ namespace FarmDashboard
         public int Col;
 
         public float Fuel = 100f;
+        public float FuelRaw;
+        public float FuelMax = 100f;
+        public int Capacity;
         public int Rounds;
         public int CosechadoTotal;
         public int Carga;
@@ -71,6 +74,14 @@ namespace FarmDashboard
     // require touching the view code that reads this state.
     public class DashboardState
     {
+        // The Cultivo page's four quadrants (see SimulationDataAdapter.CropZone).
+        // Unity derives these from init.trigo_listo and paso.cosechadas;
+        // Python stays unchanged.
+        public readonly int[] CropZoneTotals = new int[4];
+        public readonly int[] CropZoneHarvested = new int[4];
+        // Changes on every init, including restarts whose fleet happens to have
+        // the same IDs/count. Views use it to discard UI from the previous run.
+        public int SimulationGeneration;
         public DashScreen Screen = DashScreen.Intro;
         public bool IntroFading;
         public SimConfig Config = new();
@@ -199,6 +210,41 @@ namespace FarmDashboard
         }
 
         public VehicleData FindVehicle(string id) => Vehicles.FirstOrDefault(v => v.Id == id);
+
+        // Vehiculo que la lista de Combustible/Tractores/Cosechadoras tiene
+        // marcado y que la camara de seguimiento persigue. Se guarda como id
+        // y no como referencia porque cada "init" reconstruye la lista.
+        public string SelectedVehicleId;
+
+        public void SelectVehicle(string id)
+        {
+            if (SelectedVehicleId == id) return;
+            SelectedVehicleId = id;
+            NotifyChanged();
+        }
+
+        // UNICO lugar donde se decide a quien se le hace seguimiento, para
+        // que la tarjeta marcada en la lista y la camara nunca apunten a
+        // vehiculos distintos. Si el seleccionado no existe (todavia no llego
+        // el init, se reinicio con otra flota, o no es del tipo que muestra
+        // la pestana actual) cae al primero que si aplique.
+        public VehicleData VehiculoSeguido()
+        {
+            var candidatos = View switch
+            {
+                DashView.Tractores => Tractors,
+                DashView.Cosechadoras => Cosechadores,
+                _ => Vehicles,
+            };
+            VehicleData primero = null;
+            foreach (var v in candidatos)
+            {
+                primero ??= v;
+                if (v.Id == SelectedVehicleId) return v;
+            }
+            return primero;
+        }
+
         public IEnumerable<VehicleData> Tractors => Vehicles.Where(v => v.Type == VehicleType.Tractor);
         public IEnumerable<VehicleData> Cosechadores => Vehicles.Where(v => v.Type == VehicleType.Cosechador);
     }

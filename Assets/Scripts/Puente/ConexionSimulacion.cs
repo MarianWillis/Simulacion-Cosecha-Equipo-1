@@ -93,6 +93,14 @@ namespace Puente
                 case "fin":
                     gestor.ManejarFin(JsonConvert.DeserializeObject<FinDTO>(json));
                     break;
+                case "error":
+                    // El puente manda esto cuando un "reiniciar" trae
+                    // parametros invalidos (ver granja_multiagente/puente_unity.py,
+                    // _correr_simulacion) -- no cierra el socket, se queda
+                    // esperando un "reiniciar" con parametros corregidos.
+                    var mensajeError = (string)JObject.Parse(json)["mensaje"];
+                    Debug.LogError($"El puente rechazo el ultimo 'reiniciar': {mensajeError}");
+                    break;
                 default:
                     Debug.LogWarning($"Tipo de mensaje desconocido del puente: {tipo}");
                     break;
@@ -106,8 +114,10 @@ namespace Puente
                 Debug.LogWarning("No se puede mandar el comando: el socket con el puente no esta abierto.");
                 return;
             }
-            socket.SendText(JsonConvert.SerializeObject(comando,
-                new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }));
+            var json = JsonConvert.SerializeObject(comando,
+                new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+            Debug.Log($"[Puente] Comando enviado: {json}");
+            socket.SendText(json);
         }
 
         public void EnviarPausar() => EnviarComando(new ComandoSimpleDTO { tipo = "pausar" });

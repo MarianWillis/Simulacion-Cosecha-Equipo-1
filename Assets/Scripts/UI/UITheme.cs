@@ -70,6 +70,14 @@ namespace FarmDashboard
 
         // Spacing (px).
         public const float GapMajor = 20f;
+
+        // Reparto horizontal de las vistas de operacion (Cultivo, etc):
+        // panel de informacion a la izquierda, camaras por zona a la
+        // derecha. Definido en un solo lugar porque los dos paneles viven
+        // en archivos distintos (OperationsSectionView y CultivoCamarasView)
+        // y si los numeros no coinciden se encinan o dejan hueco.
+        public const float SplitPanelInfo = 0.5f;
+        public const float SplitSeparacion = 10f;
         public const float GapWithinCard = 12f;
         public const float PaddingCompact = 16f;
         public const float PaddingSpacious = 22f;

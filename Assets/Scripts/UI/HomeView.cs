@@ -22,6 +22,13 @@ namespace FarmDashboard
         private Button _pauseButton;
         private ButtonHoverColor _pauseHover;
         private TextMeshProUGUI _pauseLabel;
+        private TMP_InputField _rowsField;
+        private TMP_InputField _colsField;
+        private TMP_InputField _harvestersField;
+        private TMP_InputField _tractorsField;
+        private TMP_InputField _harvesterCapacityField;
+        private TMP_InputField _tractorCapacityField;
+        private int _lastSimulationGeneration = -1;
 
         private RectTransform _fleetList;
         private readonly Dictionary<string, (Image dot, TextMeshProUGUI status, UIBuilder.ProgressBarHandle fuel, TextMeshProUGUI fuelPct, TextMeshProUGUI rounds)> _fleetRows = new();
@@ -136,16 +143,20 @@ namespace FarmDashboard
             // Same 10 parameters the old (already-working) input-fields panel
             // sends via PanelControlSimulacion/ConexionSimulacion.EnviarReiniciar
             // -- see Puente/MensajesDTO.cs ParametrosReinicioDTO.
-            UIBuilder.NumberField(col, "Filas", "Filas", _state.Config.Rows, v => _state.Config.Rows = Mathf.Clamp(v, 3, 8));
-            UIBuilder.NumberField(col, "Columnas", "Columnas", _state.Config.Cols, v => _state.Config.Cols = Mathf.Clamp(v, 3, 8));
-            UIBuilder.NumberField(col, "Cosechadores", "Cosechadores", _state.Config.Cosechadores, v => _state.Config.Cosechadores = Mathf.Clamp(v, 0, 4));
-            UIBuilder.NumberField(col, "Tractores", "Tractores", _state.Config.Tractores, v => _state.Config.Tractores = Mathf.Clamp(v, 0, 4));
+            // Antes limitado a 3-8: resabio de un demo chico que ya no aplica
+            // -- confirmado que un grid 30x30 funciona bien. El techo real lo
+            // pone granja.py (manda "error" si los parametros no sirven, ver
+            // ConexionSimulacion.ProcesarMensaje), no un numero fijo aca.
+            _rowsField = UIBuilder.NumberField(col, "Filas", "Filas", _state.Config.Rows, v => _state.Config.Rows = Mathf.Clamp(v, 3, 60));
+            _colsField = UIBuilder.NumberField(col, "Columnas", "Columnas", _state.Config.Cols, v => _state.Config.Cols = Mathf.Clamp(v, 3, 60));
+            _harvestersField = UIBuilder.NumberField(col, "Cosechadores", "Cosechadores", _state.Config.Cosechadores, v => _state.Config.Cosechadores = Mathf.Clamp(v, 0, 4));
+            _tractorsField = UIBuilder.NumberField(col, "Tractores", "Tractores", _state.Config.Tractores, v => _state.Config.Tractores = Mathf.Clamp(v, 0, 4));
             UIBuilder.NumberField(col, "Pasos", "Pasos", _state.Config.Pasos, v => _state.Config.Pasos = Mathf.Max(v, 20));
             UIBuilder.NumberField(col, "Semilla", "Semilla", _state.Config.Semilla, v => _state.Config.Semilla = v);
             UIBuilder.NumberFieldFloat(col, "ProbDescompostura", "Probabilidad de Descompostura", _state.Config.ProbDescompostura, v => _state.Config.ProbDescompostura = Mathf.Clamp(v, 0f, 100f));
             UIBuilder.NumberFieldFloat(col, "PctObstaculos", "Porcentaje de Obstaculos", _state.Config.PctObstaculos, v => _state.Config.PctObstaculos = Mathf.Clamp(v, 0f, 100f));
-            UIBuilder.NumberField(col, "CapacidadCosechador", "Capacidad de Cosechadora", _state.Config.CapacidadCosechador, v => _state.Config.CapacidadCosechador = Mathf.Max(v, 1));
-            UIBuilder.NumberField(col, "CapacidadTractor", "Capacidad de Tractor", _state.Config.CapacidadTractor, v => _state.Config.CapacidadTractor = Mathf.Max(v, 1));
+            _harvesterCapacityField = UIBuilder.NumberField(col, "CapacidadCosechador", "Capacidad de Cosechadora", _state.Config.CapacidadCosechador, v => _state.Config.CapacidadCosechador = Mathf.Max(v, 1));
+            _tractorCapacityField = UIBuilder.NumberField(col, "CapacidadTractor", "Capacidad de Tractor", _state.Config.CapacidadTractor, v => _state.Config.CapacidadTractor = Mathf.Max(v, 1));
 
             var divider = UIBuilder.Rect(col, "Divider", UITheme.DividerTrackBg);
             UIBuilder.Flex(divider, 1, 0, -1, 1, -1, 1);
@@ -250,8 +261,23 @@ namespace FarmDashboard
 
         private void Refresh()
         {
+            RefreshConfigurationFromSimulation();
             RefreshButtons();
             RefreshFleet();
+        }
+
+        private void RefreshConfigurationFromSimulation()
+        {
+            if (_lastSimulationGeneration == _state.SimulationGeneration) return;
+            _lastSimulationGeneration = _state.SimulationGeneration;
+            if (_state.SimulationGeneration == 0) return;
+
+            _rowsField?.SetTextWithoutNotify(_state.Config.Rows.ToString());
+            _colsField?.SetTextWithoutNotify(_state.Config.Cols.ToString());
+            _harvestersField?.SetTextWithoutNotify(_state.Config.Cosechadores.ToString());
+            _tractorsField?.SetTextWithoutNotify(_state.Config.Tractores.ToString());
+            _harvesterCapacityField?.SetTextWithoutNotify(_state.Config.CapacidadCosechador.ToString());
+            _tractorCapacityField?.SetTextWithoutNotify(_state.Config.CapacidadTractor.ToString());
         }
 
         private void RefreshButtons()
