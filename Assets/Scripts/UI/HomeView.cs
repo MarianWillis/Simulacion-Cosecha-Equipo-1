@@ -48,10 +48,11 @@ namespace FarmDashboard
 
             BuildCameraCard(layout);
 
-            // Configuración (820px, 10 fields) + Flota easily add up to more than
-            // the available height -- wrap the whole right column in a scroll
-            // view (same pattern as the Flota list's own internal scroll) instead
-            // of letting it overflow/get cut off at the bottom of the screen.
+            // Configuración (~690px con la rejilla 2x5, ver ConfigAltoTarjeta)
+            // + Flota pueden pasarse de la altura disponible en una ventana
+            // chica -- wrap the whole right column in a scroll view (same
+            // pattern as the Flota list's own internal scroll) instead of
+            // letting it overflow/get cut off at the bottom of the screen.
             var rightColHost = UIBuilder.NewRect(layout, "RightColumnHost");
             UIBuilder.Flex(rightColHost, 1, 1, 260, -1);
             rightColHost.gameObject.AddComponent<RectMask2D>();
@@ -125,20 +126,60 @@ namespace FarmDashboard
             feedSlot.Image.rectTransform.offsetMax = Vector2.zero;
         }
 
+        // Medidas de la tarjeta "Configuracion". Estan aca arriba y no
+        // regadas en el cuerpo porque AltoTarjeta es la suma de las otras, y
+        // si una cambia sin la otra la tarjeta corta el ultimo boton (el
+        // panel no tiene LayoutGroup propio, asi que no deduce su alto de lo
+        // que lleva dentro -- ver el comentario de abajo).
+        private const float ConfigPadding = 16f;
+        private const float ConfigGap = 12f;
+        private const float ConfigAltoTitulo = 26f;
+        private const float ConfigAltoBoton = 40f;
+        // Los 6 parametros de nombre corto van de a dos por renglon; los 4 de
+        // nombre largo, uno por renglon. La columna derecha del Home mide
+        // ~110px por mitad, y ahi "Capacidad Cosechadora" no entra ni
+        // partida en dos: lado a lado el nombre se cortaba y quedaba un
+        // campo sin titulo legible.
+        private const int ConfigFilasDobles = 3;
+        private const int ConfigFilasSimples = 4;
+
+        private static float ConfigAltoTarjeta(float altoDoble, float altoSimple)
+        {
+            // titulo + 3 filas dobles + 4 simples + separador + 3 botones
+            // = 12 hijos => 11 huecos.
+            float contenido = ConfigAltoTitulo
+                              + ConfigFilasDobles * altoDoble
+                              + ConfigFilasSimples * altoSimple
+                              + 1f
+                              + 3f * ConfigAltoBoton;
+            int huecos = ConfigFilasDobles + ConfigFilasSimples + 4;
+            return contenido + huecos * ConfigGap + 2f * ConfigPadding;
+        }
+
         private void BuildConfigCard(Transform parent)
         {
-            var card = UIBuilder.Panel(parent, "ConfigCard", UITheme.PanelBg, UITheme.RadiusCard, exactWidth: 300, exactHeight: 820, borderColor: UITheme.PanelBorder);
-            var col = UIBuilder.VCol(card, "Col", gap: 10, padding: new RectOffset(16, 16, 16, 16), controlWidth: true, controlHeight: true, forceExpand: true);
+            // Misma paleta oscura que el resto del dashboard, pero es la
+            // unica tarjeta con la que se INTERACTUA (leer un parametro,
+            // escribir un numero), asi que sube el contraste de la etiqueta y
+            // el tamano de todo: 10/12px en gris apagado no se leen comodos.
+            // Los tokens y sus contrastes medidos viven en UITheme (bloque
+            // "Tarjeta Configuracion").
+            var estilo = UIBuilder.FieldStyle.Config();
+            var estiloAncho = UIBuilder.FieldStyle.ConfigAncha();
+            float altoFila = estilo.HostHeight;
+            int altoTarjeta = Mathf.RoundToInt(ConfigAltoTarjeta(altoFila, estiloAncho.HostHeight));
+
+            var card = UIBuilder.Panel(parent, "ConfigCard", UITheme.ConfigPanelBg, UITheme.RadiusCard, exactWidth: 300, exactHeight: altoTarjeta, borderColor: UITheme.ConfigPanelBorder);
+            var col = UIBuilder.VCol(card, "Col", gap: ConfigGap, padding: new RectOffset((int)ConfigPadding, (int)ConfigPadding, (int)ConfigPadding, (int)ConfigPadding), controlWidth: true, controlHeight: true, forceExpand: true);
             col.anchorMin = Vector2.zero; col.anchorMax = Vector2.one; col.offsetMin = Vector2.zero; col.offsetMax = Vector2.zero;
             // card has no LayoutGroup of its own, so its reported height (when
             // unset) doesn't auto-detect from col's children -- it would fall
             // back to some small default, squishing everything inside. Explicit
-            // height matching the summed content (title + 10 inputs + divider +
-            // 3 buttons + gaps + padding) instead.
-            UIBuilder.Flex(card, 0, 0, -1, 820, -1, 820);
+            // height from ConfigAltoTarjeta instead.
+            UIBuilder.Flex(card, 0, 0, -1, altoTarjeta, -1, altoTarjeta);
 
-            var title = UIBuilder.Text(col, "Title", "Configuración", UITheme.TypeRowLabel13, UIBuilder.Font(UITheme.FontPathBodyBold), UITheme.TextPrimary, TextAlignmentOptions.MidlineLeft);
-            UIBuilder.Flex((RectTransform)title.transform, 1, 0, -1, 16, -1, 16);
+            var title = UIBuilder.Text(col, "Title", "Configuración", UITheme.TypeCardTitle20, UIBuilder.Font(UITheme.FontPathBodyBold), UITheme.ConfigTextPrimary, TextAlignmentOptions.MidlineLeft);
+            UIBuilder.Flex((RectTransform)title.transform, 1, 0, -1, ConfigAltoTitulo, -1, ConfigAltoTitulo);
 
             // Same 10 parameters the old (already-working) input-fields panel
             // sends via PanelControlSimulacion/ConexionSimulacion.EnviarReiniciar
@@ -147,46 +188,94 @@ namespace FarmDashboard
             // -- confirmado que un grid 30x30 funciona bien. El techo real lo
             // pone granja.py (manda "error" si los parametros no sirven, ver
             // ConexionSimulacion.ProcesarMensaje), no un numero fijo aca.
-            _rowsField = UIBuilder.NumberField(col, "Filas", "Filas", _state.Config.Rows, v => _state.Config.Rows = Mathf.Clamp(v, 3, 60));
-            _colsField = UIBuilder.NumberField(col, "Columnas", "Columnas", _state.Config.Cols, v => _state.Config.Cols = Mathf.Clamp(v, 3, 60));
-            _harvestersField = UIBuilder.NumberField(col, "Cosechadores", "Cosechadores", _state.Config.Cosechadores, v => _state.Config.Cosechadores = Mathf.Clamp(v, 0, 4));
-            _tractorsField = UIBuilder.NumberField(col, "Tractores", "Tractores", _state.Config.Tractores, v => _state.Config.Tractores = Mathf.Clamp(v, 0, 4));
-            UIBuilder.NumberField(col, "Pasos", "Pasos", _state.Config.Pasos, v => _state.Config.Pasos = Mathf.Max(v, 20));
-            UIBuilder.NumberField(col, "Semilla", "Semilla", _state.Config.Semilla, v => _state.Config.Semilla = v);
-            UIBuilder.NumberFieldFloat(col, "ProbDescompostura", "Probabilidad de Descompostura", _state.Config.ProbDescompostura, v => _state.Config.ProbDescompostura = Mathf.Clamp(v, 0f, 100f));
-            UIBuilder.NumberFieldFloat(col, "PctObstaculos", "Porcentaje de Obstaculos", _state.Config.PctObstaculos, v => _state.Config.PctObstaculos = Mathf.Clamp(v, 0f, 100f));
-            _harvesterCapacityField = UIBuilder.NumberField(col, "CapacidadCosechador", "Capacidad de Cosechadora", _state.Config.CapacidadCosechador, v => _state.Config.CapacidadCosechador = Mathf.Max(v, 1));
-            _tractorCapacityField = UIBuilder.NumberField(col, "CapacidadTractor", "Capacidad de Tractor", _state.Config.CapacidadTractor, v => _state.Config.CapacidadTractor = Mathf.Max(v, 1));
+            //
+            // De a DOS por renglon los de nombre corto: ningun valor pasa de
+            // 4 digitos, asi que una fila entera por parametro desperdiciaba
+            // casi todo el ancho y estiraba la tarjeta a 820px (habia que
+            // hacer scroll para llegar a los botones).
+            var fila1 = FilaParametros(col, "FilaCampo", altoFila);
+            _rowsField = UIBuilder.NumberField(fila1, "Filas", "Filas", _state.Config.Rows, v => _state.Config.Rows = Mathf.Clamp(v, 3, 60), estilo);
+            _colsField = UIBuilder.NumberField(fila1, "Columnas", "Columnas", _state.Config.Cols, v => _state.Config.Cols = Mathf.Clamp(v, 3, 60), estilo);
 
-            var divider = UIBuilder.Rect(col, "Divider", UITheme.DividerTrackBg);
+            var fila2 = FilaParametros(col, "FilaFlota", altoFila);
+            // Sin techo y con piso de 1: el 4 de antes no venia de ningun lado
+            // -- EnviarReiniciar manda n_harvesters/n_tractores tal cual (ver
+            // Puente/ConexionSimulacion.cs), asi que ese Clamp era el UNICO
+            // limite que habia y no dejaba probar flotas mas grandes. Quien
+            // decide si un numero grande sirve es granja.py, que responde
+            // "error" (ver ConexionSimulacion.ProcesarMensaje). El 1 si se
+            // queda: con cero cosechadoras no se cosecha nada y con cero
+            // tractores no se descarga, o sea una corrida que no avanza.
+            _harvestersField = UIBuilder.NumberField(fila2, "Cosechadores", "Cosechadores", _state.Config.Cosechadores, v => _state.Config.Cosechadores = Mathf.Max(v, 1), estilo);
+            _tractorsField = UIBuilder.NumberField(fila2, "Tractores", "Tractores", _state.Config.Tractores, v => _state.Config.Tractores = Mathf.Max(v, 1), estilo);
+
+            var fila3 = FilaParametros(col, "FilaCorrida", altoFila);
+            UIBuilder.NumberField(fila3, "Pasos", "Pasos", _state.Config.Pasos, v => _state.Config.Pasos = Mathf.Max(v, 20), estilo);
+            UIBuilder.NumberField(fila3, "Semilla", "Semilla", _state.Config.Semilla, v => _state.Config.Semilla = v, estilo);
+
+            // Estos cuatro, APILADOS: sus nombres no entran en media tarjeta
+            // (~110px), y un campo sin titulo legible no sirve de nada por
+            // mas que se ahorren dos renglones. Van directo a `col`, sin fila
+            // intermedia -- el VerticalLayoutGroup ya los estira al ancho
+            // completo. Los dos porcentajes van de 0 a 100, asi que el "%"
+            // dice lo mismo que "Porcentaje de" en un caracter.
+            UIBuilder.NumberFieldFloat(col, "ProbDescompostura", "Descompostura %", _state.Config.ProbDescompostura, v => _state.Config.ProbDescompostura = Mathf.Clamp(v, 0f, 100f), estiloAncho);
+            UIBuilder.NumberFieldFloat(col, "PctObstaculos", "Obstáculos %", _state.Config.PctObstaculos, v => _state.Config.PctObstaculos = Mathf.Clamp(v, 0f, 100f), estiloAncho);
+            _harvesterCapacityField = UIBuilder.NumberField(col, "CapacidadCosechador", "Capacidad Cosechadora", _state.Config.CapacidadCosechador, v => _state.Config.CapacidadCosechador = Mathf.Max(v, 1), estiloAncho);
+            _tractorCapacityField = UIBuilder.NumberField(col, "CapacidadTractor", "Capacidad Tractor", _state.Config.CapacidadTractor, v => _state.Config.CapacidadTractor = Mathf.Max(v, 1), estiloAncho);
+
+            var divider = UIBuilder.Rect(col, "Divider", UITheme.ConfigDivider);
             UIBuilder.Flex(divider, 1, 0, -1, 1, -1, 1);
 
-            // Hover color is a lighter tint of green/gold rather than matching
-            // Normal exactly, so there's visible feedback even before the press-
-            // darken kicks in. RefreshButtons() below must go through
+            // Hover color is a lighter tint rather than matching Normal exactly,
+            // so there's visible feedback even before the press-darken kicks in.
+            // RefreshButtons() below must go through
             // ButtonHoverColor.SetBaseColor(), not set .color directly -- otherwise
             // moving the mouse off the button after a state change would snap it
             // back to whatever Normal color the button was CREATED with, not the
             // current enabled/disabled color.
-            _resumeButton = UIBuilder.Button(col, "ResumeBtn", UITheme.GreenPrimary, Hex("#5fb857"), UITheme.RadiusButton, exactWidth: 268, exactHeight: 34);
-            UIBuilder.Flex((RectTransform)_resumeButton.transform, 1, 0, -1, 34, -1, 34);
+            //
+            // Los tres llevan relleno propio: el RESTART "outline" de antes
+            // (fondo transparente) se confundia con la tarjeta ahora que los
+            // botones son mas altos y estan mas juntos.
+            _resumeButton = BotonConfig(col, "ResumeBtn", UITheme.GreenPrimary, Hex("#5fb857"));
             _resumeHover = _resumeButton.GetComponent<ButtonHoverColor>();
-            _resumeLabel = UIBuilder.Text(_resumeButton.transform, "Label", "RESUME", UITheme.TypeStatusButton11, UIBuilder.Font(UITheme.FontPathBodyExtraBold), UITheme.OnGreenText, TextAlignmentOptions.Center);
-            StretchFill((RectTransform)_resumeLabel.transform);
+            _resumeLabel = EtiquetaBoton(_resumeButton, "REANUDAR", UITheme.OnGreenText);
             _resumeButton.onClick.AddListener(() => _bootstrap.StartRun());
 
-            _pauseButton = UIBuilder.Button(col, "PauseBtn", UITheme.DividerTrackBg, Hex("#3a3826"), UITheme.RadiusButton, exactWidth: 268, exactHeight: 34);
-            UIBuilder.Flex((RectTransform)_pauseButton.transform, 1, 0, -1, 34, -1, 34);
+            _pauseButton = BotonConfig(col, "PauseBtn", UITheme.ConfigNeutralBtnBg, UITheme.ConfigNeutralBtnHover);
             _pauseHover = _pauseButton.GetComponent<ButtonHoverColor>();
-            _pauseLabel = UIBuilder.Text(_pauseButton.transform, "Label", "PAUSE", UITheme.TypeStatusButton11, UIBuilder.Font(UITheme.FontPathBodyExtraBold), UITheme.MidGray, TextAlignmentOptions.Center);
-            StretchFill((RectTransform)_pauseLabel.transform);
+            _pauseLabel = EtiquetaBoton(_pauseButton, "PAUSAR", UITheme.ConfigBtnText);
             _pauseButton.onClick.AddListener(() => _bootstrap.PauseRun());
 
-            var restartButton = UIBuilder.Button(col, "RestartBtn", Color.clear, UITheme.ChipBg, UITheme.RadiusButton, exactWidth: 268, exactHeight: 34);
-            UIBuilder.Flex((RectTransform)restartButton.transform, 1, 0, -1, 34, -1, 34);
-            var restartLabel = UIBuilder.Text(restartButton.transform, "Label", "RESTART", UITheme.TypeStatusButton11, UIBuilder.Font(UITheme.FontPathBodyExtraBold), UITheme.ButtonOutlineText, TextAlignmentOptions.Center);
-            StretchFill((RectTransform)restartLabel.transform);
+            var restartButton = BotonConfig(col, "RestartBtn", UITheme.ConfigOutlineBtnBg, UITheme.ConfigOutlineBtnHover);
+            EtiquetaBoton(restartButton, "REINICIAR", UITheme.ConfigBtnText);
             restartButton.onClick.AddListener(() => _bootstrap.RestartRun());
+        }
+
+        // Un renglon de la rejilla: dos parametros repartiendose el ancho a
+        // partes iguales. El reparto exacto lo consigue FieldStyle.Clara() con
+        // PreferredWidth = 0 -- sin eso la columna de la etiqueta mas larga se
+        // quedaba con mas ancho que la otra.
+        private static RectTransform FilaParametros(Transform parent, string name, float alto)
+        {
+            var row = UIBuilder.HRow(parent, name, gap: ConfigGap, controlWidth: true, controlHeight: true, forceExpand: true);
+            UIBuilder.Flex(row, 1, 0, -1, alto, -1, alto);
+            return row;
+        }
+
+        private static Button BotonConfig(Transform parent, string name, Color normal, Color hover)
+        {
+            var btn = UIBuilder.Button(parent, name, normal, hover, UITheme.RadiusButton, exactWidth: 268, exactHeight: (int)ConfigAltoBoton);
+            UIBuilder.Flex((RectTransform)btn.transform, 1, 0, -1, ConfigAltoBoton, -1, ConfigAltoBoton);
+            return btn;
+        }
+
+        private static TextMeshProUGUI EtiquetaBoton(Button btn, string texto, Color color)
+        {
+            var label = UIBuilder.Text(btn.transform, "Label", texto, UITheme.TypeConfigButton13, UIBuilder.Font(UITheme.FontPathBodyExtraBold), color, TextAlignmentOptions.Center);
+            StretchFill((RectTransform)label.transform);
+            return label;
         }
 
         private void BuildFleetCard(Transform parent)
@@ -283,12 +372,14 @@ namespace FarmDashboard
         private void RefreshButtons()
         {
             bool running = _state.Running;
-            _resumeHover.SetBaseColor(running ? UITheme.DividerTrackBg : UITheme.GreenPrimary);
-            _resumeLabel.color = running ? UITheme.MidGray : UITheme.OnGreenText;
+            // Deshabilitado = relleno mas apagado que el normal y letra gris:
+            // sin eso un boton inactivo pesa igual que el activo.
+            _resumeHover.SetBaseColor(running ? UITheme.ConfigDisabledBtnBg : UITheme.GreenPrimary);
+            _resumeLabel.color = running ? UITheme.ConfigDisabledBtnText : UITheme.OnGreenText;
             _resumeButton.interactable = !running;
 
-            _pauseHover.SetBaseColor(running ? UITheme.GoldBright : UITheme.DividerTrackBg);
-            _pauseLabel.color = running ? UITheme.OnGoldText : UITheme.MidGray;
+            _pauseHover.SetBaseColor(running ? UITheme.GoldBright : UITheme.ConfigDisabledBtnBg);
+            _pauseLabel.color = running ? UITheme.OnGoldText : UITheme.ConfigDisabledBtnText;
             _pauseButton.interactable = running;
         }
 

@@ -405,12 +405,92 @@ namespace FarmDashboard
             return btn;
         }
 
-        // Labeled numeric field matching the "Configuración" card style: label
-        // above, dark input below with a 1px divider-colored border that turns
-        // gold on focus (the app's one interactive-state signature, per spec).
-        public static TMP_InputField NumberField(Transform parent, string name, string label, int initialValue, System.Action<int> onChanged)
+        // Apariencia y medidas de un campo numerico. Los valores por defecto
+        // son el campo OSCURO original (label 10px gris sobre chip #212016);
+        // la tarjeta "Configuracion" pasa Config(), que mantiene la paleta pero
+        // sube el contraste de la etiqueta y la tipografia -- ver
+        // UITheme.ConfigPanelBg y HomeView.BuildConfigCard.
+        //
+        // Es una clase y no un pun~ado de parametros opcionales porque son
+        // once ajustes que solo tienen sentido juntos: media docena de
+        // argumentos sueltos en la firma se prestaba a mezclar la mitad de un
+        // estilo con la mitad del otro.
+        public class FieldStyle
         {
-            var field = BuildLabeledField(parent, name, label, initialValue.ToString(), TMP_InputField.ContentType.IntegerNumber);
+            public Color LabelColor = UITheme.TextMuted2;
+            public float LabelSize = UITheme.TypeCaption10;
+            public float LabelHeight = 18f;
+            public bool LabelWrap = false;
+            public TextAlignmentOptions LabelAlign = TextAlignmentOptions.MidlineLeft;
+            public string LabelFont = UITheme.FontPathBodyRegular;
+
+            public Color FieldBg = UITheme.ChipBg;
+            public Color FieldBorder = UITheme.DividerTrackBg;
+            public Color TextColor = UITheme.TextPrimary;
+            public float TextSize = UITheme.TypeBody12;
+            public string TextFont = UITheme.FontPathBodyRegular;
+            public float FieldHeight = 32f;
+            // Ancho al que se hornea el sprite de esquinas redondeadas del
+            // recuadro (ver Panel): no es el ancho real, solo tiene que
+            // parecerse para que las curvas no salgan estiradas.
+            public int BakeWidth = 260;
+            public Color CaretColor = UITheme.GoldBright;
+            public Color FocusColor = UITheme.GoldBright;
+
+            // -1 = "sin opinion", que es lo que hacia el campo original
+            // (el ancho lo decidia el texto de la etiqueta). La rejilla de dos
+            // columnas de Configuracion lo pone en 0 para que las dos mitades
+            // salgan EXACTAMENTE iguales: sin preferencia propia, todo el
+            // ancho sobrante se reparte por peso flexible, que es 1 y 1.
+            public float PreferredWidth = -1f;
+
+            public float HostHeight => LabelHeight + LabelToFieldGap + FieldHeight;
+            public const float LabelToFieldGap = 4f;
+
+            // Campo grande de la tarjeta "Configuracion": misma paleta oscura
+            // que el campo por defecto, pero con la etiqueta en gris claro y
+            // la tipografia subida (10/12 -> 15/20). Ver UITheme.
+            public static FieldStyle Config() => new FieldStyle
+            {
+                LabelColor = UITheme.ConfigTextLabel,
+                LabelSize = UITheme.TypeConfigLabel15,
+                LabelHeight = 36f,   // tope de DOS renglones a 15px
+                LabelWrap = true,    // "Capacidad Cosechadora" a media tarjeta
+                LabelAlign = TextAlignmentOptions.BottomLeft, // pegada a su campo, caiga en 1 o 2 renglones
+                LabelFont = UITheme.FontPathBodySemiBold,
+                FieldBg = UITheme.ConfigFieldBg,
+                FieldBorder = UITheme.ConfigFieldBorder,
+                TextColor = UITheme.ConfigTextPrimary,
+                TextSize = UITheme.TypeConfigValue20,
+                TextFont = UITheme.FontPathBodySemiBold,
+                FieldHeight = 40f,
+                BakeWidth = 110,   // media tarjeta, no la tarjeta entera
+                CaretColor = UITheme.ConfigFocusRing,
+                FocusColor = UITheme.ConfigFocusRing,
+                PreferredWidth = 0f,
+            };
+
+            // Igual, pero para un parametro SOLO en su renglon. Al ancho
+            // completo de la tarjeta la etiqueta entra sobrada en un renglon,
+            // asi que no hace falta reservar el segundo -- y esos 14px menos
+            // por fila son los que permiten apilar cuatro parametros sin que
+            // la tarjeta crezca (ver HomeView.ConfigAltoTarjeta).
+            public static FieldStyle ConfigAncha()
+            {
+                var estilo = Config();
+                estilo.LabelHeight = 22f;
+                estilo.BakeWidth = 230;
+                return estilo;
+            }
+        }
+
+        // Labeled numeric field matching the "Configuración" card style: label
+        // above, input below with a 1px border that turns gold on focus (the
+        // app's one interactive-state signature, per spec). `style` decides
+        // dark-and-small vs light-and-large -- see FieldStyle.
+        public static TMP_InputField NumberField(Transform parent, string name, string label, int initialValue, System.Action<int> onChanged, FieldStyle style = null)
+        {
+            var field = BuildLabeledField(parent, name, label, initialValue.ToString(), TMP_InputField.ContentType.IntegerNumber, style);
             field.onEndEdit.AddListener(v =>
             {
                 if (int.TryParse(v, out var iv)) onChanged?.Invoke(iv);
@@ -418,9 +498,9 @@ namespace FarmDashboard
             return field;
         }
 
-        public static TMP_InputField NumberFieldFloat(Transform parent, string name, string label, float initialValue, System.Action<float> onChanged)
+        public static TMP_InputField NumberFieldFloat(Transform parent, string name, string label, float initialValue, System.Action<float> onChanged, FieldStyle style = null)
         {
-            var field = BuildLabeledField(parent, name, label, initialValue.ToString(System.Globalization.CultureInfo.InvariantCulture), TMP_InputField.ContentType.DecimalNumber);
+            var field = BuildLabeledField(parent, name, label, initialValue.ToString(System.Globalization.CultureInfo.InvariantCulture), TMP_InputField.ContentType.DecimalNumber, style);
             field.onEndEdit.AddListener(v =>
             {
                 if (float.TryParse(v, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var fv))
@@ -429,16 +509,34 @@ namespace FarmDashboard
             return field;
         }
 
-        private static TMP_InputField BuildLabeledField(Transform parent, string name, string label, string initialText, TMP_InputField.ContentType contentType)
+        private static TMP_InputField BuildLabeledField(Transform parent, string name, string label, string initialText, TMP_InputField.ContentType contentType, FieldStyle style = null)
         {
-            var host = VCol(parent, name, gap: 4, controlWidth: true, controlHeight: true, forceExpand: true);
-            Flex(host, 1, 0, -1, 54, -1, 54);
+            style ??= new FieldStyle();
 
-            var labelText = Text(host, name + "_Label", label, UITheme.TypeCaption10, Font(UITheme.FontPathBodyRegular), UITheme.TextMuted2, TextAlignmentOptions.MidlineLeft);
-            Flex((RectTransform)labelText.transform, 1, 0, -1, 14, -1, 14);
+            var host = VCol(parent, name, gap: FieldStyle.LabelToFieldGap, controlWidth: true, controlHeight: true, forceExpand: true);
+            Flex(host, 1, 0, -1, style.HostHeight, style.PreferredWidth, style.HostHeight);
 
-            var fieldHost = Panel(host, name + "_Field", UITheme.ChipBg, 6f, exactWidth: 260, exactHeight: 32, borderColor: UITheme.DividerTrackBg, borderWidth: 1f);
-            Flex(fieldHost, 1, 0, -1, 32, -1, 32);
+            var labelText = Text(host, name + "_Label", label, style.LabelSize, Font(style.LabelFont), style.LabelColor, style.LabelAlign);
+            // Text() deja todo en NoWrap; a media tarjeta una etiqueta larga
+            // se saldria del recuadro en vez de partirse en dos renglones.
+            if (style.LabelWrap)
+            {
+                labelText.textWrappingMode = TextWrappingModes.Normal;
+                // Y con Overflow (el default de Text()) un tercer renglon no
+                // se corta: se dibuja FUERA del recuadro, encima del campo de
+                // la fila de arriba -- que es exactamente lo que hacia
+                // "Probabilidad de Descompostura". Ellipsis lo corta con "..."
+                // dentro de su hueco: la etiqueta se ve incompleta, que es
+                // feo pero visible, en vez de romper la fila vecina en
+                // silencio. Si aparece un "...", la respuesta es acortar la
+                // etiqueta, no subir LabelHeight.
+                labelText.overflowMode = TextOverflowModes.Ellipsis;
+            }
+            Flex((RectTransform)labelText.transform, 1, 0, -1, style.LabelHeight, -1, style.LabelHeight);
+
+            int altoExacto = Mathf.RoundToInt(style.FieldHeight);
+            var fieldHost = Panel(host, name + "_Field", style.FieldBg, 6f, exactWidth: style.BakeWidth, exactHeight: altoExacto, borderColor: style.FieldBorder, borderWidth: 1f);
+            Flex(fieldHost, 1, 0, -1, style.FieldHeight, -1, style.FieldHeight);
 
             // TMP_InputField generates its caret as a child under textViewport at
             // runtime -- pointing textViewport at the SAME rect as the text
@@ -458,9 +556,9 @@ namespace FarmDashboard
             textGo.offsetMin = Vector2.zero;
             textGo.offsetMax = Vector2.zero;
             var tmpText = textGo.gameObject.AddComponent<TextMeshProUGUI>();
-            tmpText.font = Font(UITheme.FontPathBodyRegular);
-            tmpText.fontSize = UITheme.TypeBody12;
-            tmpText.color = UITheme.TextPrimary;
+            tmpText.font = Font(style.TextFont);
+            tmpText.fontSize = style.TextSize;
+            tmpText.color = style.TextColor;
             tmpText.alignment = TextAlignmentOptions.MidlineLeft;
 
             var fieldImg = fieldHost.GetComponent<Image>();
@@ -475,14 +573,14 @@ namespace FarmDashboard
             // the text color unless told otherwise -- make it gold and a touch
             // wider so it's clearly visible against the dark field background.
             field.customCaretColor = true;
-            field.caretColor = UITheme.GoldBright;
+            field.caretColor = style.CaretColor;
             field.caretWidth = 2;
             field.caretBlinkRate = 0.85f;
 
             var focus = fieldHost.gameObject.AddComponent<InputFocusBorder>();
             focus.Border = fieldImg;
-            focus.NormalColor = UITheme.DividerTrackBg;
-            focus.FocusColor = UITheme.GoldBright;
+            focus.NormalColor = style.FieldBorder;
+            focus.FocusColor = style.FocusColor;
             focus.Attach(field);
 
             return field;

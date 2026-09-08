@@ -60,7 +60,7 @@ namespace FarmDashboard
 
         // Matches the rest of ParametrosReinicioDTO (Puente/MensajesDTO.cs) that
         // the old input-fields panel already sent -- see PanelControlSimulacion.
-        public float PctObstaculos = 10f;
+        public float PctObstaculos = 5f;
         public int CapacidadCosechador = 50;
         public int CapacidadTractor = 50;
         public float ProbDescompostura = 2f;
